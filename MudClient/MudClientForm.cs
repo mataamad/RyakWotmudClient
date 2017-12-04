@@ -173,8 +173,8 @@ namespace MudClient.Management {
 		}
 
 		private void BindUIFormatting() {
-			this.richTextBox.BackColor = Options.BackgroundColor;
-			this.richTextBox.ForeColor = Options.ForegroundColor;
+			this.richTextBox.BackColor = MudColors.BackgroundColor;
+			this.richTextBox.ForeColor = MudColors.ForegroundColor;
 			this.richTextBox.Font = Options.Font;
 		}
 

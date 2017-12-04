@@ -1,5 +1,6 @@
 ﻿using MudClient.Common.Extensions;
 using MudClient.Core.Common;
+using MudClient.Extensions;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -11,7 +12,6 @@ using System.Threading.Tasks.Dataflow;
 
 namespace MudClient {
     public class ConnectionClientProducer {
-
         public delegate void EventHandler(MessageEventArgs e);
 
         public event EventHandler OnClientDisconnected;
@@ -37,8 +37,7 @@ namespace MudClient {
             // 'todo: fix encoding'
         }
 
-        public void LoopOnNewThreads(string address, int port, CancellationToken cancellationToken)
-        {
+        public void LoopOnNewThreads(string address, int port, CancellationToken cancellationToken) {
             Task.Run(() => ReceiveLoop(address, port, cancellationToken));
             Task.Run(() => SendLoop(cancellationToken));
         }
@@ -73,17 +72,10 @@ namespace MudClient {
                 } catch (OperationCanceledException) {
                     return;
                 }
-                if (cancellationToken.IsCancellationRequested) {
-                    return;
-                }
 
                 string message = Encoding.Default.GetString(_dataBuffer, 0, length);
                 if (!string.IsNullOrEmpty(message) || _tcpClient.IsSocketConnected()) {
-                    try {
-                        await _receiveBuffer.SendAsync(message, cancellationToken);
-                    } catch (OperationCanceledException) {
-                        return;
-                    }
+                    await _receiveBuffer.SendAsync(message);
                 } else {
                     _tcpClient.Client.Disconnect(true);
                     OnClientDisconnected?.Invoke(new MessageEventArgs("Disconnected."));
@@ -92,19 +84,13 @@ namespace MudClient {
         }
 
         // Loops sending any messages
-        private async Task SendLoop(CancellationToken cancellationToken)
-        {
+        private async Task SendLoop(CancellationToken cancellationToken) {
             while (!cancellationToken.IsCancellationRequested) {
-
-                string message;
-                try {
-                    message = await _sendBuffer.ReceiveAsync(cancellationToken);
-                } catch (OperationCanceledException) {
-                    return;
-                }
+                string message = await _sendBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {
                     return;
                 }
+
                 if (_tcpClient.Connected) {
                     await _controlWriter.WriteLineAsync(message);
                     await _controlWriter.FlushAsync();

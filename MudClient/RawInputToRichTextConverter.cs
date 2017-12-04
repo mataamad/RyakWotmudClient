@@ -1,6 +1,4 @@
-﻿using MudClient.Management;
-using System;
-using System.Collections.Concurrent;
+﻿using MudClient.Extensions;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -11,42 +9,6 @@ using System.Threading.Tasks.Dataflow;
 
 namespace MudClient {
     public class RawInputToRichTextConverter {
-        public class FormattedOutput {
-            public string Text { get; set; }
-            public Color TextColor { get; set; } = Color.White;
-            public bool ReplaceCurrentLine { get; set; } = false;
-
-            public override string ToString() {
-                string replace = ReplaceCurrentLine ? "T" : "F";
-                return $"R:{replace},{TextColor},\"{Text.Replace("\n","\\n")}\"";
-            }
-        }
-
-        public const string ANSI_COLOR_ESCAPE_CHARACTER = "\u001b";
-        public const string ANSI_RESET = "[0m";
-        public const string ANSI_UNKNOWN = "[01m";
-        public const string ANSI_BLACK = "[30m";
-        public const string ANSI_RED = "[31m";
-        public const string ANSI_GREEN = "[32m";
-        public const string ANSI_YELLOW = "[33m";
-        public const string ANSI_BLUE = "[34m";
-        public const string ANSI_PURPLE = "[35m";
-        public const string ANSI_CYAN = "[36m";
-        public const string ANSI_WHITE = "[37m";
-
-        private readonly Dictionary<string, Color> _colorDictionary = new Dictionary<string, Color> {
-            { ANSI_RESET, Color.White   },
-            { ANSI_UNKNOWN, Color.White },
-            { ANSI_BLACK, Color.White},
-            { ANSI_RED, Color.Red },
-            { ANSI_GREEN, Color.Green },
-            { ANSI_YELLOW, Color.Yellow },
-            { ANSI_BLUE, Color.Blue },
-            { ANSI_PURPLE, Color.Purple },
-            { ANSI_CYAN, Color.Teal },
-            { ANSI_WHITE, Color.White }
-        };
-
         private readonly BufferBlock<string> _inputBuffer;
         private readonly BufferBlock<List<FormattedOutput>> _outputBuffer;
 
@@ -55,25 +17,17 @@ namespace MudClient {
             _outputBuffer = outputBuffer;
         }
 
-        public void LoopOnNewThread(CancellationToken cancellationToken)
-        {
+        public void LoopOnNewThread(CancellationToken cancellationToken) {
             Task.Run(() => Loop(cancellationToken));
         }
 
         private async Task Loop(CancellationToken cancellationToken) {
             while (!cancellationToken.IsCancellationRequested) {
-
-                string input;
-                try {
-                    input = await _inputBuffer.ReceiveAsync(cancellationToken);
-                } catch (OperationCanceledException) {
-                    return;
-                }
+                string input = await _inputBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {
                     return;
                 }
 
-                // todo: process the input here into rich text
                 await _outputBuffer.SendAsync(FormatOutput(input));
             }
         }
@@ -86,7 +40,7 @@ namespace MudClient {
             const char ESCAPE_CHAR = (char)0x1B;
             const char REPLACE_CURRENT_LINE_CHAR = (char)0x00; // is '\0'
 
-            var foregroundColor = Color.White;
+            var foregroundColor = MudColors.ForegroundColor;
             var sb = new StringBuilder();
             bool replaceCurrentLine = false;
             var e = s.GetEnumerator();
@@ -111,7 +65,7 @@ namespace MudClient {
                         escapeCharSb.Append(escapeChar);
                     }
 
-                    if (_colorDictionary.TryGetValue(escapeCharSb.ToString(), out Color escapeColor)) {
+                    if (MudColors.Dictionary.TryGetValue(escapeCharSb.ToString(), out Color escapeColor)) {
                         if (foregroundColor != escapeColor) {
                             var str = sb.ToString();
                             if (string.IsNullOrWhiteSpace(str) && !replaceCurrentLine) {

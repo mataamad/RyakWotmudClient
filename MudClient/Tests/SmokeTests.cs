@@ -1,17 +1,13 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MudClient.Management;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using static MudClient.RawInputToRichTextConverter;
 
 namespace MudClient.Tests {
     [TestClass]
+    // todo: need to actually test something in here...
     public class SmokeTests {
         [TestMethod]
         public async Task TestBash() {

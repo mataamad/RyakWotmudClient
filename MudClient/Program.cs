@@ -53,13 +53,6 @@ namespace MudClient {
                 sendMessageMultiplier.LoopOnNewThread(cts.Token);
                 clientInfoMultiplier.LoopOnNewThread(cts.Token);
 
-                /*Task.Run(() => {
-                    Thread.Sleep(8000);
-                    for (int i = 0; i < 100; i++) {
-                        sendMessageBuffer.Post("dia ryak");
-                    }
-                });*/
-
 				form.ShowDialog();
 			}
             cts.Cancel();

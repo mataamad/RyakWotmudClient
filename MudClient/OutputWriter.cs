@@ -1,4 +1,5 @@
 ﻿using MudClient.Core.Common;
+using MudClient.Extensions;
 using MudClient.Management;
 using System;
 using System.Collections.Generic;
@@ -30,13 +31,7 @@ namespace MudClient {
 
         private async Task LoopFormattedOutput(CancellationToken cancellationToken) {
             while (!cancellationToken.IsCancellationRequested) {
-
-                List<FormattedOutput> output;
-                try {
-                    output = await _outputBuffer.ReceiveAsync(cancellationToken);
-                } catch (OperationCanceledException) {
-                    return;
-                }
+                List<FormattedOutput> output = await _outputBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {
                     return;
                 }
@@ -47,13 +42,7 @@ namespace MudClient {
 
         private async Task LoopSentMessage(CancellationToken cancellationToken) {
             while (!cancellationToken.IsCancellationRequested) {
-
-                string output;
-                try {
-                    output = await _sentMessageBuffer.ReceiveAsync(cancellationToken);
-                } catch (OperationCanceledException) {
-                    return;
-                }
+                string output = await _sentMessageBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {
                     return;
                 }
@@ -61,25 +50,21 @@ namespace MudClient {
                 // output = "\n" + output + "\n";
                 // output = "\n" + output;
                 output = output + "\n"; // seems to be the most like zMud
-                _form.WriteToOutput(output, Options.CommandColor);
+                _form.WriteToOutput(output, MudColors.CommandColor);
             }
         }
 
         private async Task LoopClientInfo(CancellationToken cancellationToken) {
             while (!cancellationToken.IsCancellationRequested) {
-
                 string output;
                 try {
                     output = await _clientInfoBuffer.ReceiveAsync(cancellationToken);
                 } catch (OperationCanceledException) {
                     return;
                 }
-                if (cancellationToken.IsCancellationRequested) {
-                    return;
-                }
 
                 output = "\n" + output + "\n";
-                _form.WriteToOutput(output, Options.ClientInfoColor);
+                _form.WriteToOutput(output, MudColors.ClientInfoColor);
             }
         }
     }

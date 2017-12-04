@@ -1,4 +1,5 @@
 ﻿using MudClient.Core.Common;
+using MudClient.Extensions;
 using MudClient.Management;
 using System;
 using System.Drawing;
@@ -26,36 +27,24 @@ namespace MudClient {
 
         private async Task LoopDevOutput(CancellationToken cancellationToken) {
             while (!cancellationToken.IsCancellationRequested) {
-
-                string output;
-                try {
-                    output = await _devOutputBuffer.ReceiveAsync(cancellationToken);
-                } catch (OperationCanceledException) {
-                    return;
-                }
+                string output = await _devOutputBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {
                     return;
                 }
 
-                _form.WriteToOutput(output, Color.White);
+                _form.WriteToOutput(output, MudColors.ForegroundColor);
             }
         }
 
         private async Task LoopSentMessage(CancellationToken cancellationToken) {
             while (!cancellationToken.IsCancellationRequested) {
-
-                string output;
-                try {
-                    output = await _sentMessageBuffer.ReceiveAsync(cancellationToken);
-                } catch (OperationCanceledException) {
-                    return;
-                }
+                string output = await _sentMessageBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {
                     return;
                 }
 
                 output = output + "\n"; // seems to be the most like zMud
-                _form.WriteToOutput(output, Options.CommandColor);
+                _form.WriteToOutput(output, MudColors.CommandColor);
             }
         }
     }

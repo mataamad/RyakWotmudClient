@@ -1,4 +1,5 @@
-﻿using MudClient.Management;
+﻿using MudClient.Extensions;
+using MudClient.Management;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -32,10 +33,6 @@ namespace MudClient {
         public const string _dateString = "{date}";
         private readonly string _filename = $"./Log_{_dateString}.csv";
 
-        // todo: need to pass in the timing somehow...
-        //          measure it in here for now.
-        // so will read the sent & output messages and append them to a new log file buffer & loop writing that to a single file on a 3rd thread
-        // need to choose how to escape everything.
         public CsvLogFileWriter(BufferBlock<string> outputBuffer, BufferBlock<string> sentMessageBuffer, BufferBlock<string> clientInfoBuffer) {
             _outputBuffer = outputBuffer;
             _sentMessageBuffer = sentMessageBuffer;
@@ -51,82 +48,42 @@ namespace MudClient {
 
         private async Task LoopOutput(CancellationToken cancellationToken) {
             while (!cancellationToken.IsCancellationRequested) {
-
-                string output;
-                try {
-                    output = await _outputBuffer.ReceiveAsync(cancellationToken);
-                } catch (OperationCanceledException) {
-                    return;
-                }
+                string output = await _outputBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {
                     return;
                 }
 
-                await _logBuffer.SendAsync(new LogLine {
-                    Time = DateTime.Now,
-                    MsSinceStart = _sw.Elapsed.TotalMilliseconds,
-                    MessageType = LOG_TYPE_MUD_OUTPUT,
-                    EncodedText = EncodeLogString(output),
-                });
+                await _logBuffer.SendAsync(ToLogLine(output, LOG_TYPE_MUD_OUTPUT));
             }
         }
 
         private async Task LoopSentMessage(CancellationToken cancellationToken) {
             while (!cancellationToken.IsCancellationRequested) {
-
-                string output;
-                try {
-                    output = await _sentMessageBuffer.ReceiveAsync(cancellationToken);
-                } catch (OperationCanceledException) {
-                    return;
-                }
+                string output = await _sentMessageBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {
                     return;
                 }
 
-                await _logBuffer.SendAsync(new LogLine {
-                    Time = DateTime.Now,
-                    MsSinceStart = _sw.Elapsed.TotalMilliseconds,
-                    MessageType = LOG_TYPE_MUD_INPUT,
-                    EncodedText = EncodeLogString(output),
-                });
+                await _logBuffer.SendAsync(ToLogLine(output, LOG_TYPE_MUD_INPUT));
             }
         }
 
         private async Task LoopClientInfo(CancellationToken cancellationToken) {
             while (!cancellationToken.IsCancellationRequested) {
-
-                string output;
-                try {
-                    output = await _clientInfoBuffer.ReceiveAsync(cancellationToken);
-                } catch (OperationCanceledException) {
-                    return;
-                }
+                string output = await _clientInfoBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {
                     return;
                 }
 
-                await _logBuffer.SendAsync(new LogLine {
-                    Time = DateTime.Now,
-                    MsSinceStart = _sw.Elapsed.TotalMilliseconds,
-                    MessageType = LOG_TYPE_CLIENT_INFO,
-                    EncodedText = EncodeLogString(output),
-                });
+                await _logBuffer.SendAsync(ToLogLine(output, LOG_TYPE_CLIENT_INFO));
             }
         }
-
 
         private async Task LoopWriteFile(CancellationToken cancellationToken) {
             string filename = _filename.Replace(_dateString, DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture));
             using (var file = new StreamWriter(filename, append: true)) {
                 while (!cancellationToken.IsCancellationRequested) {
-
-                    LogLine output;
-                    try {
-                        output = await _logBuffer.ReceiveAsync(cancellationToken);
-                    } catch (OperationCanceledException) {
-                        return;
-                    }
+                    LogLine output = await _logBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                     if (cancellationToken.IsCancellationRequested) {
                         return;
                     }
@@ -138,30 +95,13 @@ namespace MudClient {
             }
         }
 
-        private string EncodeLogString(string s) {
-            var sb = new StringBuilder();
-
-            foreach (char c in s) {
-                if (Char.IsControl(c) || (c > 127 && c < 256) || c == ',') {
-                    if (c == '\r') {
-                        sb.Append("\\r");
-                    } else if (c == '\n') {
-                        sb.Append("\\n");
-                    } else {
-                        // encode control characters as e.g. [1A]
-                        sb.Append("\\x");
-                        sb.Append(string.Format("{0:X2}", (byte)c));
-                    }
-                } else if (c > 255) {
-                    // This character is too big for ASCII
-                    string encodedValue = "\\u" + ((int)c).ToString("x4");
-                    sb.Append(encodedValue);
-                } else {
-                    sb.Append(c);
-                }
-            }
-
-            return sb.ToString();
+        private LogLine ToLogLine(string output, string messageType) {
+            return new LogLine {
+                Time = DateTime.Now,
+                MsSinceStart = _sw.Elapsed.TotalMilliseconds,
+                MessageType = messageType,
+                EncodedText = ControlCharacterEncoder.Encode(output, forCsv: true),
+            };
         }
     }
 }

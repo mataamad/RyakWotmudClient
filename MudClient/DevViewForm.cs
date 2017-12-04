@@ -15,8 +15,8 @@ namespace MudClient.Management
 
 		protected override void OnLoad(EventArgs e) {
 			base.OnLoad(e);
-            richTextBox.BackColor = Options.BackgroundColor;
-            richTextBox.ForeColor = Options.ForegroundColor;
+            richTextBox.BackColor = MudColors.BackgroundColor;
+            richTextBox.ForeColor = MudColors.ForegroundColor;
             richTextBox.Font = Options.Font;
         }
 

@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MudClient</RootNamespace>
     <AssemblyName>MudClient</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
@@ -52,6 +52,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Aliases.cs" />
+    <Compile Include="Extensions\DataFlowBlockExtensions.cs" />
+    <Compile Include="FormattedOutput.cs" />
+    <Compile Include="Helpers\ControlCharacterEncoder.cs" />
+    <Compile Include="Helpers\MudColors.cs" />
     <Compile Include="Tests\SmokeTests.cs" />
     <None Include=".editorconfig" />
     <Compile Include="Common\HotKey.cs" />
@@ -62,22 +66,22 @@
     <Compile Include="CsvLogFileWriter.cs" />
     <Compile Include="Extensions\RichTextBoxExtensions.cs" />
     <Compile Include="Extensions\TcpClientExtensions.cs" />
-    <Compile Include="Management\HotKeysForm.cs">
+    <Compile Include="HotKeysForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Management\HotKeysForm.Designer.cs">
+    <Compile Include="HotKeysForm.Designer.cs">
       <DependentUpon>HotKeysForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Management\DevViewForm.cs">
+    <Compile Include="DevViewForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Management\DevViewForm.Designer.cs">
+    <Compile Include="DevViewForm.Designer.cs">
       <DependentUpon>DevViewForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Management\MudClientForm.cs">
+    <Compile Include="MudClientForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Management\MudClientForm.Designer.cs">
+    <Compile Include="MudClientForm.Designer.cs">
       <DependentUpon>MudClientForm.cs</DependentUpon>
     </Compile>
     <Compile Include="DevOutputWriter.cs" />
@@ -93,18 +97,19 @@
     <Compile Include="BufferBlockMultiplier.cs" />
     <Compile Include="RawInputToRichTextConverter.cs" />
     <Compile Include="RawInputToDevTextConverter.cs" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Management\DevViewForm.resx">
+    <EmbeddedResource Include="DevViewForm.resx">
       <DependentUpon>DevViewForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Management\HotKeysForm.resx">
+    <EmbeddedResource Include="HotKeysForm.resx">
       <DependentUpon>HotKeysForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Management\MudClientForm.resx">
+    <EmbeddedResource Include="MudClientForm.resx">
       <DependentUpon>MudClientForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

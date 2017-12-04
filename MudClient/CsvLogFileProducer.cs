@@ -11,30 +11,23 @@ using static MudClient.CsvLogFileWriter;
 
 namespace MudClient {
     public class CsvLogFileProducer {
-
-        public delegate void EventHandler(MessageEventArgs e);
-
         private readonly BufferBlock<string> _receiveBuffer;
         private readonly BufferBlock<string> _sendBuffer;
         private readonly BufferBlock<string> _clientInfoBuffer;
 
-
         // todo: allow choosing between constant time between messages & replaying back at a % of orignal input speed
         // todo: allow configuring time between messages
-
         public CsvLogFileProducer(BufferBlock<string> receiveBuffer, BufferBlock<string> sendBuffer, BufferBlock<string> clientInfoBuffer) {
             _receiveBuffer = receiveBuffer;
             _sendBuffer = sendBuffer;
             _clientInfoBuffer = clientInfoBuffer;
         }
 
-        public void LoopOnNewThread(string filename, CancellationToken cancellationToken, Action onLogParsed = null)
-        {
+        public void LoopOnNewThread(string filename, CancellationToken cancellationToken, Action onLogParsed = null) {
             LoopOnNewThread(filename, cancellationToken, TimeSpan.FromSeconds(0.25), onLogParsed);
         }
 
-        public void LoopOnNewThread(string filename, CancellationToken cancellationToken, TimeSpan timeBetweenMessages, Action onLogParsed = null)
-        {
+        public void LoopOnNewThread(string filename, CancellationToken cancellationToken, TimeSpan timeBetweenMessages, Action onLogParsed = null) {
             Task.Run(() => ProcessLogLoop(filename, timeBetweenMessages, onLogParsed, cancellationToken));
         }
 
@@ -58,7 +51,7 @@ namespace MudClient {
 
                 await Task.Delay(timeBetweenMessages);
 
-                string decodedText = DecodeLogString(logLine.EncodedText);
+                string decodedText = ControlCharacterEncoder.Decode(logLine.EncodedText);
 
                 if (logLine.MessageType == LOG_TYPE_MUD_INPUT) {
                     await _sendBuffer.SendAsync(decodedText);
@@ -76,74 +69,6 @@ namespace MudClient {
             }
         }
 
-        private string DecodeLogString(string s) {
-            var sb = new StringBuilder();
 
-            var e = s.GetEnumerator();
-            while (e.MoveNext()) {
-                char c = e.Current;
-
-                if (c == '\\') {
-                    if (e.MoveNext()) {
-                        char next = e.Current;
-
-                        if (next == 'x') {
-                            if (!e.MoveNext()) {
-                                sb.Append(c);
-                                sb.Append(next);
-                                continue;
-                            }
-                            char numberChar1 = e.Current;
-
-                            if (!e.MoveNext()) {
-                                sb.Append(c);
-                                sb.Append(next);
-                                sb.Append(numberChar1);
-                                continue;
-                            }
-                            char numberChar2 = e.Current;
-
-                            string numberString = new string( new[] { numberChar1, numberChar2 });
-                            char decodedChar = (char)int.Parse(numberString, System.Globalization.NumberStyles.HexNumber);
-
-                            sb.Append(decodedChar);
-                        } else if (next == 'r') {
-                            sb.Append('\r');
-                        } else if (next == 'n') {
-                            sb.Append('\n');
-                        } else {
-                            sb.Append(c);
-                            sb.Append(next);
-                        }
-                    }
-                } else {
-                    sb.Append(c);
-                }
-            }
-
-            return sb.ToString();
-
-            foreach (char c in s) {
-                if (Char.IsControl(c) || (c > 127 && c < 256) || c == ',') {
-                    if (c == '\r') {
-                        sb.Append("\\r");
-                    } else if (c == '\n') {
-                        sb.Append("\\n");
-                    } else {
-                        // encode control characters as e.g. [1A]
-                        sb.Append("\\x");
-                        sb.Append(string.Format("{0:X2}", (byte)c));
-                    }
-                } else if (c > 255) {
-                    // This character is too big for ASCII
-                    string encodedValue = "\\u" + ((int)c).ToString("x4");
-                    sb.Append(encodedValue);
-                } else {
-                    sb.Append(c);
-                }
-            }
-
-            return sb.ToString();
-        }
     }
 }
