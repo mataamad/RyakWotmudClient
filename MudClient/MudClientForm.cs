@@ -103,7 +103,7 @@ namespace MudClient.Management {
                         Close();
                         break;
 					default:
-                        if (firstLine && COMMAND_ALIAS.StartsWith(firstWordToUpper)) {
+                        if (firstLine && COMMAND_ALIAS.StartsWith(firstWordToUpper) && firstWordToUpper != "") {
                             await ProcessAliasCommand(input);
                             textBox.SelectAll();
                             return;

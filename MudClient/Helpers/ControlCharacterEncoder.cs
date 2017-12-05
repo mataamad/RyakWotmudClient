@@ -17,7 +17,6 @@ namespace MudClient {
                         }
                     } else {
                         // encode control characters as e.g. \x1A
-                        sb.Append("\\x");
                         sb.Append($"\\x{(byte)c:X2}");
                     }
                 } else if (c > 255) {
