@@ -18,6 +18,7 @@ namespace MudClient {
         private Dictionary<int, ZmudDbOjectTblRow[]> _roomsByZone;
         private Dictionary<string, ZmudDbOjectTblRow[]> _roomsByName;
         private Dictionary<string, ZmudDbOjectTblRow[]> _roomsByDescription;
+        private Dictionary<string, ZmudDbOjectTblRow[]> _roomsByFirstLineOfDescription;
 
         private Dictionary<int, ZmudDbExitTblRow> _exitsById;
         private Dictionary<int, ZmudDbExitTblRow[]> _exitsByFromRoom;
@@ -58,6 +59,7 @@ namespace MudClient {
             _roomsByZone = _dataLoader.Rooms.GroupBy(room => room.ZoneID.Value).ToDictionary(group => group.Key, group => group.ToArray());
             _roomsByName = _dataLoader.Rooms.GroupBy(room => room.Name).ToDictionary(group => group.Key, group => group.ToArray());
             _roomsByDescription = _dataLoader.Rooms.GroupBy(room => room.Desc).ToDictionary(group => group.Key, group => group.ToArray());
+            _roomsByFirstLineOfDescription = _dataLoader.Rooms.GroupBy(room => room.Desc.Split('\r','\n').FirstOrDefault().Trim()).ToDictionary(group => group.Key, group => group.ToArray());
 
             _exitsById = _dataLoader.Exits.ToDictionary(exit => exit.ExitID.Value, exit => exit);
             _exitsByFromRoom = _dataLoader.Exits.GroupBy(exit => exit.FromID.Value).ToDictionary(group => group.Key, group => group.ToArray());
@@ -141,15 +143,19 @@ namespace MudClient {
 
                 bool hasFromRoom = _roomsById.TryGetValue(exit.FromID.Value, out var fromRoom);
                 bool hasToRoom = _roomsById.TryGetValue(exit.ToID.Value, out var toRoom);
-                hasFromRoom = hasFromRoom && fromRoom.ZoneID.Value == currentZoneId;
                 hasToRoom = hasToRoom && toRoom.ZoneID.Value == currentZoneId;
+                hasFromRoom = hasFromRoom && fromRoom.ZoneID.Value == currentZoneId;
 
                 // todo: handle rooms that go out of zone
-                if (hasFromRoom && hasToRoom) {
+                if (hasFromRoom) {
                     int x1 = (int)(scaleX * (fromRoom.X.Value - minX) + BorderSize);
                     int y1 = (int)(scaleY * (fromRoom.Y.Value - minY) + BorderSize);
-                    int x2 = (int)(scaleX * (toRoom.X.Value - minX) + BorderSize);
-                    int y2 = (int)(scaleY * (toRoom.Y.Value - minY) + BorderSize);
+                    int x2 = -1;
+                    int y2 = -1;
+                    if (hasToRoom) {
+                        x2 = (int)(scaleX * (toRoom.X.Value - minX) + BorderSize);
+                        y2 = (int)(scaleY * (toRoom.Y.Value - minY) + BorderSize);
+                    }
 
                     if (exit.DirType.Value == (int)DirectionTypes.Up || exit.DirType.Value == (int)DirectionTypes.Down) {
                         // draw up/down exits
@@ -169,11 +175,11 @@ namespace MudClient {
                         int deltaX1 = 0;
                         int deltaY1 = 0;
                         if (exit.DirType.Value == (int)DirectionTypes.North)
-                            deltaY1 = -4 + RoomSize/2;
+                            deltaY1 = -4 - RoomSize/2;
                         if (exit.DirType.Value == (int)DirectionTypes.South)
                             deltaY1 = 4 + RoomSize / 2;
                         if (exit.DirType.Value == (int)DirectionTypes.West)
-                            deltaX1 = -4 + RoomSize / 2;
+                            deltaX1 = -4 - RoomSize / 2;
                         if (exit.DirType.Value == (int)DirectionTypes.East)
                             deltaX1 = 4 + RoomSize / 2;
 
@@ -183,18 +189,27 @@ namespace MudClient {
                         if (exit.DirType.Value == (int)DirectionTypes.North)
                             deltaY2 = 4 + RoomSize / 2;
                         if (exit.DirType.Value == (int)DirectionTypes.South)
-                            deltaY2 = -4 + RoomSize / 2;
+                            deltaY2 = -4 - RoomSize / 2;
                         if (exit.DirType.Value == (int)DirectionTypes.West)
                             deltaX2 = 4 + RoomSize / 2;
                         if (exit.DirType.Value == (int)DirectionTypes.East)
-                            deltaX2 = -4 + RoomSize / 2;
+                            deltaX2 = -4 - RoomSize / 2;
 
-                        e.Graphics.DrawLines(Pens.Black, new[] {
-                            new Point(x1 + RoomSize/2, y1 + RoomSize/2),
-                            new Point(x1 + RoomSize/2 + deltaX1, y1 + RoomSize/2 + deltaY1),
-                            new Point(x2 + RoomSize/2 + deltaX2, y2 + RoomSize/2 + deltaY2),
-                            new Point(x2 + RoomSize/2, y2 + RoomSize/2)
-                        });
+                        if (hasToRoom) {
+                            e.Graphics.DrawLines(Pens.Black, new[] {
+                                new Point(x1 + RoomSize/2, y1 + RoomSize/2),
+                                new Point(x1 + RoomSize/2 + deltaX1, y1 + RoomSize/2 + deltaY1),
+                                new Point(x2 + RoomSize/2 + deltaX2, y2 + RoomSize/2 + deltaY2),
+                                new Point(x2 + RoomSize/2, y2 + RoomSize/2)
+                            });
+                        } else {
+                            // to room doesn't exist or is in different zone
+                            var pen = new Pen(Brushes.Brown, width: 4);
+                            e.Graphics.DrawLines(pen, new[] {
+                                new Point(x1 + RoomSize/2, y1 + RoomSize/2),
+                                new Point(x1 + RoomSize/2 + deltaX1, y1 + RoomSize/2 + deltaY1)
+                            });
+                        }
 
                         if (exit.ExitIDTo == -1) {
                             // todo: do more than just colour 1 way links
@@ -216,7 +231,10 @@ namespace MudClient {
                 double x = scaleX * (room.X.Value - minX) + BorderSize;
                 double y = scaleY * (room.Y.Value - minY) + BorderSize;
 
-                var fillBrush = Brushes.LightGray;
+                var rgb = room.Color.Value;
+                var color = Color.FromArgb((rgb >> 0) & 0xff, (rgb >> 8) & 0xff, (rgb >> 16) & 0xff);
+                Brush fillBrush = new SolidBrush(color);
+                // var fillBrush = Brushes.LightGray;
                 if (room.ObjID.Value == _currentVirtualRoomId) {
                     if (_currentVirtualRoomId == _currentRoomId) {
                         fillBrush = Brushes.Purple;
@@ -229,6 +247,11 @@ namespace MudClient {
                 }
                 e.Graphics.FillRectangle(fillBrush, (int)x, (int)y, RoomSize, RoomSize);
                 e.Graphics.DrawRectangle(Pens.Black, (int)x, (int)y, RoomSize, RoomSize);
+
+                if (!string.IsNullOrEmpty(room.IDName)) {
+                    var font = new Font(SystemFonts.DefaultFont.FontFamily, 10, FontStyle.Regular);
+                    e.Graphics.DrawString(room.IDName, font, Brushes.Black, (float)x + 4, (float)y - 7);
+                }
 
                 // var font = new Font(SystemFonts.DefaultFont.FontFamily, 5, FontStyle.Regular);
                 // e.Graphics.DrawString(room.ObjID.Value.ToString(), font, Brushes.Black, (float)x + 4, (float)y - 7);
@@ -283,25 +306,40 @@ namespace MudClient {
             }
 
             // for testing purposes I'm just jumping to the first room with the same room name
-            ZmudDbOjectTblRow[] possibleRooms = null;
-            _roomsByName.TryGetValue(room.Name, out possibleRooms);
+            ZmudDbOjectTblRow[] possibleRoomsByName = null;
+            _roomsByName.TryGetValue(room.Name, out possibleRoomsByName);
 
-            if (possibleRooms == null) {
+            if (possibleRoomsByName == null) {
                 // no rooms found with the same name.  For now just return
                 return;
             }
-            if (possibleRooms.Length == 1) {
-                _currentRoomId = possibleRooms[0].ObjID.Value;
+            if (possibleRoomsByName.Length == 1) {
+                _currentRoomId = possibleRoomsByName[0].ObjID.Value;
                 Invalidate();
                 return;
             }
 
-            if (_roomsByDescription.TryGetValue(room.Description.Replace("\n","\r\n"), out ZmudDbOjectTblRow[] roomsWithSameDescription)) {
-                possibleRooms = roomsWithSameDescription.Intersect(possibleRooms).ToArray();
-                if (possibleRooms.Any()) {
-                    _currentRoomId = possibleRooms[0].ObjID.Value;
-                    Invalidate();
-                    return;
+            ZmudDbOjectTblRow[] possibleRooms = null;
+            if (_roomsByDescription.TryGetValue(room.Description.Replace("\n", "\r\n"), out ZmudDbOjectTblRow[] roomsWithSameDescription)) {
+                possibleRooms = roomsWithSameDescription.Intersect(possibleRoomsByName).ToArray();
+            } else {
+                possibleRooms = new ZmudDbOjectTblRow[0];
+            }
+
+            if (possibleRooms.Any()) {
+                // todo: currently takes first if there are multiple
+                _currentRoomId = possibleRooms[0].ObjID.Value;
+                Invalidate();
+                return;
+            } else {
+                // the zmud mapper only uses the first line of the description so it's more likely to be correct
+                if (_roomsByFirstLineOfDescription.TryGetValue(room.Description.Split('\n').FirstOrDefault().Trim(), out ZmudDbOjectTblRow[] roomsWithSameFirstLineDescription)) {
+                    possibleRooms = roomsWithSameFirstLineDescription.Intersect(possibleRoomsByName).ToArray();
+                    if (possibleRooms.Any()) {
+                        // todo: currently takes first if there are multiple
+                        _currentRoomId = possibleRooms[0].ObjID.Value;
+                        Invalidate();
+                    }
                 }
             }
         }
