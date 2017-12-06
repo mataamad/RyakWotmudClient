@@ -103,6 +103,10 @@ namespace MudClient {
 
         // maybe useful at some point
         private async Task LoopSentMessage(CancellationToken cancellationToken) {
+            while (!_mapWindow.DataLoaded) {
+                await Task.Delay(TimeSpan.FromMilliseconds(100));
+            }
+
             while (!cancellationToken.IsCancellationRequested) {
                 string output = await _sentMessageBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {

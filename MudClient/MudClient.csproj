@@ -69,6 +69,7 @@
       <DependentUpon>MapWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="MapDataLoader.cs" />
+    <Compile Include="NarrsWriter.cs" />
     <Compile Include="RoomFinder.cs" />
     <Compile Include="Tests\SmokeTests.cs" />
     <Compile Include="ZmudDbTypes.cs" />

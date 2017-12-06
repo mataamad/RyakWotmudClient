@@ -1,4 +1,6 @@
-﻿namespace MudClient.Management {
+﻿using System.Windows.Forms;
+
+namespace MudClient.Management {
 	partial class MudClientForm {
 		/// <summary>
 		/// Required designer variable.
@@ -31,12 +33,18 @@
             this.hotKeysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.devWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.controlPanel = new System.Windows.Forms.Panel();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.richTextBox = new System.Windows.Forms.RichTextBox();
             this.textBox = new System.Windows.Forms.TextBox();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.narrsRichTextBox = new System.Windows.Forms.RichTextBox();
             this.menuStrip.SuspendLayout();
             this.controlPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -91,7 +99,7 @@
             // 
             // controlPanel
             // 
-            this.controlPanel.Controls.Add(this.richTextBox);
+            this.controlPanel.Controls.Add(this.splitContainer1);
             this.controlPanel.Controls.Add(this.textBox);
             this.controlPanel.Controls.Add(this.statusStrip);
             this.controlPanel.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -99,6 +107,24 @@
             this.controlPanel.Name = "controlPanel";
             this.controlPanel.Size = new System.Drawing.Size(784, 977);
             this.controlPanel.TabIndex = 1;
+            // 
+            // splitContainer1
+            // 
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.narrsRichTextBox);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.richTextBox);
+            this.splitContainer1.Size = new System.Drawing.Size(784, 935);
+            this.splitContainer1.SplitterDistance = 99;
+            this.splitContainer1.TabIndex = 5;
             // 
             // richTextBox
             // 
@@ -109,7 +135,7 @@
             this.richTextBox.HideSelection = false;
             this.richTextBox.Location = new System.Drawing.Point(0, 0);
             this.richTextBox.Name = "richTextBox";
-            this.richTextBox.Size = new System.Drawing.Size(784, 935);
+            this.richTextBox.Size = new System.Drawing.Size(784, 832);
             this.richTextBox.TabIndex = 2;
             this.richTextBox.Text = "";
             // 
@@ -137,6 +163,19 @@
             this.toolStripStatusLabel.Size = new System.Drawing.Size(82, 17);
             this.toolStripStatusLabel.Text = "Disconnected.";
             // 
+            // narrsRichTextBox
+            // 
+            this.narrsRichTextBox.BackColor = System.Drawing.Color.Silver;
+            this.narrsRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.narrsRichTextBox.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.narrsRichTextBox.ForeColor = System.Drawing.Color.Black;
+            this.narrsRichTextBox.HideSelection = false;
+            this.narrsRichTextBox.Location = new System.Drawing.Point(0, 0);
+            this.narrsRichTextBox.Name = "narrsRichTextBox";
+            this.narrsRichTextBox.Size = new System.Drawing.Size(784, 99);
+            this.narrsRichTextBox.TabIndex = 3;
+            this.narrsRichTextBox.Text = "";
+            // 
             // MudClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -153,6 +192,10 @@
             this.menuStrip.PerformLayout();
             this.controlPanel.ResumeLayout(false);
             this.controlPanel.PerformLayout();
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -173,5 +216,7 @@
 		private System.Windows.Forms.TextBox textBox;
 		private System.Windows.Forms.ToolStripMenuItem hotKeysToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem devWindowToolStripMenuItem;
+        private System.Windows.Forms.SplitContainer splitContainer1;
+        private RichTextBox narrsRichTextBox;
     }
 }

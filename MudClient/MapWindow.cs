@@ -44,6 +44,8 @@ namespace MudClient {
         private int _currentRoomId = 0;
         private int _currentVirtualRoomId = -1;
 
+        public bool DataLoaded = false;
+
         public MapWindow() {
             InitializeComponent();
         }
@@ -70,6 +72,7 @@ namespace MudClient {
             // _blightExitsByFromId = _blightExits.ToDictionary(exit => exit.FromID.Value, exit => exit);
             // _blightExitsByToId = _blightExits.ToDictionary(exit => exit.ToID.Value, exit => exit);
 
+            DataLoaded = true;
             this.Invalidate();
         }
 

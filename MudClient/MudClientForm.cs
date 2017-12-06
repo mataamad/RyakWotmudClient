@@ -191,6 +191,9 @@ namespace MudClient.Management {
 			this.richTextBox.BackColor = MudColors.BackgroundColor;
 			this.richTextBox.ForeColor = MudColors.ForegroundColor;
 			this.richTextBox.Font = Options.Font;
+			this.narrsRichTextBox.BackColor = MudColors.BackgroundColor;
+			this.narrsRichTextBox.ForeColor = MudColors.ForegroundColor;
+			this.narrsRichTextBox.Font = Options.Font;
 		}
 
         private void QuickConnect(string[] parameters) {
@@ -238,8 +241,7 @@ namespace MudClient.Management {
 			}
         }
 
-        public void WriteToOutput(List<FormattedOutput> outputs)
-        {
+        public void WriteToOutput(List<FormattedOutput> outputs) {
             if (!outputs.Any()) {
                 return;
             }
@@ -264,6 +266,18 @@ namespace MudClient.Management {
 			} else {
 				AppendText();
 			}
+        }
+
+        public void WriteToNarrs(string message, Color textColor) {
+            Action AppendText = () => {
+                narrsRichTextBox.AppendFormattedText(message, textColor);
+            };
+
+            if (narrsRichTextBox.InvokeRequired) {
+                narrsRichTextBox.Invoke(AppendText);
+            } else {
+                AppendText();
+            }
         }
 
 		private void connectionClient_Connected(object sender) {

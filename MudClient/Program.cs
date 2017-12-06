@@ -10,8 +10,8 @@ using static MudClient.RoomFinder;
 namespace MudClient {
 	public class Program {
 
-        public const bool ReadFromLogFile = true;
-        // public const bool ReadFromLogFile = false;
+        // public const bool ReadFromLogFile = true;
+        public const bool ReadFromLogFile = false;
         // public const string LogFilename = "./test_bash.csv";
         // public const string LogFilename = "./test_only_bash.csv";
         // public const string LogFilename = "./Log_2017-11-27 17-34-35.csv";
@@ -52,12 +52,14 @@ namespace MudClient {
                 var outputWriter = new OutputWriter(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), clientInfoMultiplier.GetBlock(), form);
                 var devOutputWriter = new DevOutputWriter(devTextBuffer, sendMessageMultiplier.GetBlock(), form.DevViewForm);
                 var roomFinder = new RoomFinder(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), form.MapWindow);
+                var narrsWriter = new NarrsWriter(richTextMultiplier.GetBlock(), form);
                 outputWriter.LoopOnNewThread(cts.Token);
                 devOutputWriter.LoopOnNewThread(cts.Token);
                 sendMessageMultiplier.LoopOnNewThread(cts.Token);
                 clientInfoMultiplier.LoopOnNewThread(cts.Token);
                 richTextMultiplier.LoopOnNewThread(cts.Token);
                 roomFinder.LoopOnNewThread(cts.Token);
+                narrsWriter.LoopOnNewThread(cts.Token);
 
                 form.ShowDialog();
 			}
