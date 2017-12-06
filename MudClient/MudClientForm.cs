@@ -71,22 +71,24 @@ namespace MudClient.Management {
 				textBox.Focus();
 			}
 
-			try {
-				var hotKey = _hotKeyCollection[e.KeyData];
-				if (hotKey != null) {
-					HandleInput(hotKey.CommandText);
-					e.Handled = true;
-					e.SuppressKeyPress = true;
-				}
-				else if (e.KeyCode == Keys.Enter) {
-					HandleInput(this.textBox.Text);
-					e.Handled = true;
-					e.SuppressKeyPress = true;
-				}
-			}
-			catch (Exception caught) {
-				this.WriteToOutput($"#Error processing command: {caught.Message}", Color.Red);
-			}
+            if (e.Control && e.KeyCode == Keys.A) {
+                textBox.SelectAll();
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                return;
+            }
+
+            var hotKey = _hotKeyCollection[e.KeyData];
+            if (hotKey != null) {
+                HandleInput(hotKey.CommandText);
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+            else if (e.KeyCode == Keys.Enter) {
+                HandleInput(this.textBox.Text);
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
 		}
 
 		private async Task HandleInput(string input) {
