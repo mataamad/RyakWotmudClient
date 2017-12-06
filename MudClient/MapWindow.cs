@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -26,23 +27,17 @@ namespace MudClient {
 
         private ZmudDbZoneTbl[] _zones;
 
-        // rooms by zone
 
-        // rooms by room name
-        // rooms by description
-        // (eventually) rooms by exit
-
-        // exits by exit.FromID
-        // exits by exit.ToID
-
-        private const int RoomSize = 6;
-        private const int BorderSize = 5;
-
-        // private readonly Dictionary<int, ZmudDbExitTblRow> _blightExitsByFromId;
-        // private readonly Dictionary<int, ZmudDbExitTblRow> _blightExitsByToId;
+        private const int DefaultRoomSize = 6;
+        private const double MaxScaling = 0.08;
+        private const double MinScaling = 0.1;
 
         private int _currentRoomId = 0;
         private int _currentVirtualRoomId = -1;
+
+        private int _prevOffsetX = 0;
+        private int _prevOffsetY = 0;
+        private int _prevZoneId = -1;
 
         public bool DataLoaded = false;
 
@@ -54,8 +49,6 @@ namespace MudClient {
 
             _dataLoader = new MapDataLoader();
             _dataLoader.LoadData();
-            // _blightRooms = _dataLoader.GetBlightRooms().ToDictionary(room => room.ObjID.Value, room => room);
-            // _blightExits = _dataLoader.GetExits(_blightRooms);
 
             _roomsById = _dataLoader.Rooms.ToDictionary(room => room.ObjID.Value, room => room);
             _roomsByZone = _dataLoader.Rooms.GroupBy(room => room.ZoneID.Value).ToDictionary(group => group.Key, group => group.ToArray());
@@ -69,13 +62,11 @@ namespace MudClient {
 
             _zones = _dataLoader.Zones;
 
-            // _blightExitsByFromId = _blightExits.ToDictionary(exit => exit.FromID.Value, exit => exit);
-            // _blightExitsByToId = _blightExits.ToDictionary(exit => exit.ToID.Value, exit => exit);
-
             DataLoaded = true;
             this.Invalidate();
         }
 
+        // todo: tidy up all this scaling and offset stuff
         private void OnPaint(object sender, PaintEventArgs e) {
             if (_dataLoader == null) {
                 return;
@@ -117,16 +108,93 @@ namespace MudClient {
 
             var minX = roomsInZone.Min(o => o.X.Value);
             var minY = roomsInZone.Min(o => o.Y.Value);
-            var minZ = roomsInZone.Min(o => o.Z.Value);
+            // var minZ = roomsInZone.Min(o => o.Z.Value);
             var maxX = roomsInZone.Max(o => o.X.Value);
             var maxY = roomsInZone.Max(o => o.Y.Value);
-            var maxZ = roomsInZone.Max(o => o.Z.Value);
+            // var maxZ = roomsInZone.Max(o => o.Z.Value);
 
-            var xWidth = e.ClipRectangle.Width;
-            var yWidth = e.ClipRectangle.Height;
+            var screenWidth = e.ClipRectangle.Width;
+            var screenHeight = e.ClipRectangle.Height;
 
-            double scaleX = (xWidth - 2*BorderSize - RoomSize) / ((double)(maxX - minX));
-            double scaleY = (yWidth - 2*BorderSize - RoomSize) / ((double)(maxY - minY));
+            var zoneWidth = maxX - minX;
+            var zoneHeight = maxY - minY;
+
+            double scale = Math.Min(screenWidth / ((double)zoneWidth), screenHeight / ((double)zoneHeight));
+            // Debug.WriteLine($"scaleX: {scaleX}, scaleY: {scaleY}");
+            if (scale < MaxScaling) {
+                scale = MaxScaling;
+            }
+            if (scale > MinScaling) {
+                scale = MinScaling;
+            }
+            int roomSize = (int)((scale / 0.05) * DefaultRoomSize); // the 0.05 is kind of arbitary - it's a size that gives reasonable room sizes
+
+            var scaledZoneWidth = scale * zoneWidth;
+            var scaledZoneHeight = scale * zoneHeight;
+
+            int offsetX = 0;
+            int offsetY = 0;
+
+            if (scaledZoneWidth < screenWidth) {
+                offsetX = (int)((screenWidth - scaledZoneWidth) / 2);
+            } else {
+                // try to use the previous offset unless we're within 1/8 of the screensize of the edge of the screen
+                bool usePrevOffset = _prevZoneId == currentZoneId;
+                if (usePrevOffset) {
+                    int prevOffsetXCoord = (int)(scale * (currentRoom.X.Value - minX)) + _prevOffsetX;
+                    if (prevOffsetXCoord < screenWidth / 8 || prevOffsetXCoord > 7 * screenWidth / 8) {
+                        usePrevOffset = false;
+                    }
+                }
+
+                if (usePrevOffset) {
+                    offsetX = _prevOffsetX;
+                } else {
+                    offsetX = screenWidth / 2 - (int)(scale * (currentRoom.X.Value - minX));
+
+                    // if this offset will push past the left or right side of the screen, we should jump back to it
+                    int maxXCoord = (int)(scale * (maxX - minX)) + offsetX;
+                    // 20 px border
+                    if (maxXCoord + 20 < screenWidth) {
+                        offsetX = screenWidth - (int)(scale * (maxX - minX)) - 20;
+                    }
+                    if (offsetX > 20) {
+                        offsetX = 20;
+                    }
+                }
+            }
+            if (scaledZoneHeight < screenHeight) {
+                offsetY = (int)((screenHeight - scaledZoneHeight) / 2);
+            } else {
+                // try to use the previous offset unless we're within 1/8 of the screensize of the edge of the screen
+                bool usePrevOffset = _prevZoneId == currentZoneId;
+                if (usePrevOffset) {
+                    int prevOffsetYCoord = (int)(scale * (currentRoom.Y.Value - minY)) + _prevOffsetY;
+                    if (prevOffsetYCoord < screenHeight / 8 || prevOffsetYCoord > 7 * screenHeight / 8) {
+                        usePrevOffset = false;
+                    }
+                }
+
+                if (usePrevOffset) {
+                    offsetY = _prevOffsetY;
+                } else {
+                    offsetY = screenHeight / 2 - (int)(scale * (currentRoom.Y.Value - minY));
+
+                    // if this offset will push past the top or bottom side of the screen, we should jump back to it
+                    int maxYCoord = (int)(scale * (maxY - minY)) + offsetY;
+                    // 20 px border
+                    if (maxYCoord + 20 < screenHeight) {
+                        offsetY = screenHeight - (int)(scale * (maxY - minY)) - 20;
+                    }
+                    if (offsetY > 20) {
+                        offsetY = 20;
+                    }
+                }
+            }
+            _prevZoneId = currentZoneId;
+            _prevOffsetX = offsetX;
+            _prevOffsetY = offsetY;
+
 
             /*
              * ExitIDTo - the exitTable entry that pairs with this one (-1 if no pair)
@@ -151,13 +219,13 @@ namespace MudClient {
 
                 // todo: handle rooms that go out of zone
                 if (hasFromRoom) {
-                    int x1 = (int)(scaleX * (fromRoom.X.Value - minX) + BorderSize);
-                    int y1 = (int)(scaleY * (fromRoom.Y.Value - minY) + BorderSize);
+                    int x1 = (int)(scale * (fromRoom.X.Value - minX)) + offsetX;
+                    int y1 = (int)(scale * (fromRoom.Y.Value - minY)) + offsetY;
                     int x2 = -1;
                     int y2 = -1;
                     if (hasToRoom) {
-                        x2 = (int)(scaleX * (toRoom.X.Value - minX) + BorderSize);
-                        y2 = (int)(scaleY * (toRoom.Y.Value - minY) + BorderSize);
+                        x2 = (int)(scale * (toRoom.X.Value - minX)) + offsetX;
+                        y2 = (int)(scale * (toRoom.Y.Value - minY)) + offsetY;
                     }
 
                     if (exit.DirType.Value == (int)DirectionTypes.Up || exit.DirType.Value == (int)DirectionTypes.Down) {
@@ -169,7 +237,7 @@ namespace MudClient {
                         }
                         if (exit.DirType.Value == (int)DirectionTypes.Down) {
                             // draw downwards facing triangle
-                            e.Graphics.DrawPolygon(Pens.Black, new[] { new Point(x1 - 4, y1 + RoomSize), new Point(x1 - 2, y1 - 2 + RoomSize), new Point(x1 - 6, y1 - 2 + RoomSize) });
+                            e.Graphics.DrawPolygon(Pens.Black, new[] { new Point(x1 - 4, y1 + roomSize), new Point(x1 - 2, y1 - 2 + roomSize), new Point(x1 - 6, y1 - 2 + roomSize) });
                         }
                         // e.Graphics.DrawRectangle(penColor, 1, RoomSize/2, RoomSize/2);
 
@@ -178,39 +246,39 @@ namespace MudClient {
                         int deltaX1 = 0;
                         int deltaY1 = 0;
                         if (exit.DirType.Value == (int)DirectionTypes.North)
-                            deltaY1 = -4 - RoomSize/2;
+                            deltaY1 = -4 - roomSize/2;
                         if (exit.DirType.Value == (int)DirectionTypes.South)
-                            deltaY1 = 4 + RoomSize / 2;
+                            deltaY1 = 4 + roomSize / 2;
                         if (exit.DirType.Value == (int)DirectionTypes.West)
-                            deltaX1 = -4 - RoomSize / 2;
+                            deltaX1 = -4 - roomSize / 2;
                         if (exit.DirType.Value == (int)DirectionTypes.East)
-                            deltaX1 = 4 + RoomSize / 2;
+                            deltaX1 = 4 + roomSize / 2;
 
                         int deltaX2 = 0;
                         int deltaY2 = 0;
 
                         if (exit.DirType.Value == (int)DirectionTypes.North)
-                            deltaY2 = 4 + RoomSize / 2;
+                            deltaY2 = 4 + roomSize / 2;
                         if (exit.DirType.Value == (int)DirectionTypes.South)
-                            deltaY2 = -4 - RoomSize / 2;
+                            deltaY2 = -4 - roomSize / 2;
                         if (exit.DirType.Value == (int)DirectionTypes.West)
-                            deltaX2 = 4 + RoomSize / 2;
+                            deltaX2 = 4 + roomSize / 2;
                         if (exit.DirType.Value == (int)DirectionTypes.East)
-                            deltaX2 = -4 - RoomSize / 2;
+                            deltaX2 = -4 - roomSize / 2;
 
                         if (hasToRoom) {
                             e.Graphics.DrawLines(Pens.Black, new[] {
-                                new Point(x1 + RoomSize/2, y1 + RoomSize/2),
-                                new Point(x1 + RoomSize/2 + deltaX1, y1 + RoomSize/2 + deltaY1),
-                                new Point(x2 + RoomSize/2 + deltaX2, y2 + RoomSize/2 + deltaY2),
-                                new Point(x2 + RoomSize/2, y2 + RoomSize/2)
+                                new Point(x1 + roomSize/2, y1 + roomSize/2),
+                                new Point(x1 + roomSize/2 + deltaX1, y1 + roomSize/2 + deltaY1),
+                                new Point(x2 + roomSize/2 + deltaX2, y2 + roomSize/2 + deltaY2),
+                                new Point(x2 + roomSize/2, y2 + roomSize/2)
                             });
                         } else {
                             // to room doesn't exist or is in different zone
                             var pen = new Pen(Brushes.Brown, width: 4);
                             e.Graphics.DrawLines(pen, new[] {
-                                new Point(x1 + RoomSize/2, y1 + RoomSize/2),
-                                new Point(x1 + RoomSize/2 + deltaX1, y1 + RoomSize/2 + deltaY1)
+                                new Point(x1 + roomSize/2, y1 + roomSize/2),
+                                new Point(x1 + roomSize/2 + deltaX1, y1 + roomSize/2 + deltaY1)
                             });
                         }
 
@@ -218,8 +286,8 @@ namespace MudClient {
                             // todo: do more than just colour 1 way links
                             var pen = new Pen(Brushes.Green, width: 4);
                             e.Graphics.DrawLines(pen, new[] {
-                                new Point(x1 + RoomSize/2, y1 + RoomSize/2),
-                                new Point(x1 + RoomSize/2 + deltaX1, y1 + RoomSize/2 + deltaY1)
+                                new Point(x1 + roomSize/2, y1 + roomSize/2),
+                                new Point(x1 + roomSize/2 + deltaX1, y1 + roomSize/2 + deltaY1)
                             });
                         }
 
@@ -231,29 +299,30 @@ namespace MudClient {
 
 
             foreach (var room in roomsInZone) {
-                double x = scaleX * (room.X.Value - minX) + BorderSize;
-                double y = scaleY * (room.Y.Value - minY) + BorderSize;
+                int x = (int)(scale * (room.X.Value - minX)) + offsetX;
+                int y = (int)(scale * (room.Y.Value - minY)) + offsetY;
 
                 var rgb = room.Color.Value;
                 var color = Color.FromArgb((rgb >> 0) & 0xff, (rgb >> 8) & 0xff, (rgb >> 16) & 0xff);
                 Brush fillBrush = new SolidBrush(color);
                 // var fillBrush = Brushes.LightGray;
                 if (room.ObjID.Value == _currentVirtualRoomId) {
+                    e.Graphics.DrawRectangle(Pens.Red, x-2, y-2, roomSize+4, roomSize+4); // draw a red hilight around the current spammed-to room
+
                     if (_currentVirtualRoomId == _currentRoomId) {
                         fillBrush = Brushes.Purple;
-
                     } else {
                         fillBrush = Brushes.Green;
                     }
                 } else if (room.ObjID.Value == _currentRoomId) {
                     fillBrush = Brushes.IndianRed;
                 }
-                e.Graphics.FillRectangle(fillBrush, (int)x, (int)y, RoomSize, RoomSize);
-                e.Graphics.DrawRectangle(Pens.Black, (int)x, (int)y, RoomSize, RoomSize);
+                e.Graphics.FillRectangle(fillBrush, x, y, roomSize, roomSize);
+                e.Graphics.DrawRectangle(Pens.Black, x, y, roomSize, roomSize);
 
                 if (!string.IsNullOrEmpty(room.IDName)) {
                     var font = new Font(SystemFonts.DefaultFont.FontFamily, 10, FontStyle.Regular);
-                    e.Graphics.DrawString(room.IDName, font, Brushes.Black, (float)x + 4, (float)y - 7);
+                    e.Graphics.DrawString(room.IDName, font, Brushes.Black, x + 4, y - 7);
                 }
 
                 // var font = new Font(SystemFonts.DefaultFont.FontFamily, 5, FontStyle.Regular);
