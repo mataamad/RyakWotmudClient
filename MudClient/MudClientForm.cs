@@ -78,6 +78,13 @@ namespace MudClient.Management {
                 return;
             }
 
+            if (e.Control && e.KeyCode == Keys.C) {
+                Clipboard.SetText(richTextBox.SelectedText);
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                return;
+            }
+
             var hotKey = _hotKeyCollection[e.KeyData];
             if (hotKey != null) {
                 HandleInput(hotKey.CommandText);
