@@ -55,6 +55,7 @@
             this.richTextBox.Size = new System.Drawing.Size(784, 1001);
             this.richTextBox.TabIndex = 2;
             this.richTextBox.Text = "";
+            this.richTextBox.WordWrap = false;
             // 
             // DevViewForm
             // 
@@ -62,7 +63,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 1001);
             this.Controls.Add(this.controlPanel);
-            this.Location = new System.Drawing.Point(800, 0);
+            this.Location = new System.Drawing.Point(1920, 0);
             this.Name = "DevViewForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "C# Mud Client Dev View";

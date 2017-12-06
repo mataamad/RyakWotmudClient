@@ -5,19 +5,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using static MudClient.RawInputToRichTextConverter;
+using static MudClient.RoomFinder;
 
 namespace MudClient {
 	public class Program {
 
-        // public const bool ReadFromLogFile = true;
-        public const bool ReadFromLogFile = false;
+        public const bool ReadFromLogFile = true;
+        // public const bool ReadFromLogFile = false;
         // public const string LogFilename = "./test_bash.csv";
         // public const string LogFilename = "./test_only_bash.csv";
-        public const string LogFilename = "./Log_2017-11-27 17-34-35.csv";
+        // public const string LogFilename = "./Log_2017-11-27 17-34-35.csv";
+        public const string LogFilename = "one_room.csv";
+        // public const string LogFilename = "LdLog.csv";
 
         [STAThread]
 		public static void Main(string[] args) {
-
             BufferBlock<string> tcpReceiveBuffer = new BufferBlock<string>();
             BufferBlock<List<FormattedOutput>> richTextBuffer = new BufferBlock<List<FormattedOutput>>();
             BufferBlock<string> devTextBuffer = new BufferBlock<string>();
@@ -27,6 +29,7 @@ namespace MudClient {
             var tcpReceiveMultiplier = new BufferBlockMultiplier<string>(tcpReceiveBuffer);
             var sendMessageMultiplier = new BufferBlockMultiplier<string>(sendMessageBuffer);
             var clientInfoMultiplier = new BufferBlockMultiplier<string>(clientInfoBuffer);
+            var richTextMultiplier = new BufferBlockMultiplier<List<FormattedOutput>>(richTextBuffer);
 
             var cts = new CancellationTokenSource();
 
@@ -46,14 +49,17 @@ namespace MudClient {
             csvWriter.LoopOnNewThread(cts.Token);
 
 			using (var form = new MudClientForm(cts.Token, connectionClientProducer, sendMessageBuffer, clientInfoBuffer)) {
-                var outputWriter = new OutputWriter(richTextBuffer, sendMessageMultiplier.GetBlock(), clientInfoMultiplier.GetBlock(), form);
+                var outputWriter = new OutputWriter(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), clientInfoMultiplier.GetBlock(), form);
                 var devOutputWriter = new DevOutputWriter(devTextBuffer, sendMessageMultiplier.GetBlock(), form.DevViewForm);
+                var roomFinder = new RoomFinder(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), form.MapWindow);
                 outputWriter.LoopOnNewThread(cts.Token);
                 devOutputWriter.LoopOnNewThread(cts.Token);
                 sendMessageMultiplier.LoopOnNewThread(cts.Token);
                 clientInfoMultiplier.LoopOnNewThread(cts.Token);
+                richTextMultiplier.LoopOnNewThread(cts.Token);
+                roomFinder.LoopOnNewThread(cts.Token);
 
-				form.ShowDialog();
+                form.ShowDialog();
 			}
             cts.Cancel();
 		}

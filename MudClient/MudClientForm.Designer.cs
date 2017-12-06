@@ -109,11 +109,9 @@
             this.richTextBox.HideSelection = false;
             this.richTextBox.Location = new System.Drawing.Point(0, 0);
             this.richTextBox.Name = "richTextBox";
-            this.richTextBox.ReadOnly = false;
             this.richTextBox.Size = new System.Drawing.Size(784, 935);
             this.richTextBox.TabIndex = 2;
             this.richTextBox.Text = "";
-            this.richTextBox.WordWrap = false;
             // 
             // textBox
             // 

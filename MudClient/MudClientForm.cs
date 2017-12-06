@@ -3,6 +3,7 @@ using MudClient.Common.Extensions;
 using MudClient.Core.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -34,6 +35,7 @@ namespace MudClient.Management {
         private readonly Aliases _aliases = new Aliases();
 
         public DevViewForm DevViewForm { get; private set; }
+        public MapWindow MapWindow { get; private set; }
 
 		public MudClientForm(
             CancellationToken cancellationToken,
@@ -48,6 +50,7 @@ namespace MudClient.Management {
 			this.KeyPreview = true;
 
             DevViewForm = new DevViewForm();
+            MapWindow = new MapWindow();
             _aliases.LoadAliases();
 		}
 
@@ -56,6 +59,9 @@ namespace MudClient.Management {
             base.OnShown(e);
 
             DevViewForm.Show(this);
+
+            MapWindow.Show(this);
+
             this.textBox.Focus();
         }
 
@@ -213,6 +219,7 @@ namespace MudClient.Management {
         {
             Action AppendText = () => {
                 richTextBox.AppendFormattedText(message, textColor);
+                // Debug.Write(message);
             };
 
 			if (richTextBox.InvokeRequired) {
@@ -230,6 +237,7 @@ namespace MudClient.Management {
 
             Action AppendText = () => {
                 foreach (var output in outputs) {
+                    // Debug.Write(output.Text);
                     // richTextBox.AppendFormattedText("X" + output.Text, output.TextColor);
 
                     if (output.ReplaceCurrentLine) {
