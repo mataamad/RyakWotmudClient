@@ -3,16 +3,15 @@ using MudClient.Common.Extensions;
 using MudClient.Core.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using System.Windows.Forms;
-using static MudClient.RawInputToRichTextConverter;
 
 namespace MudClient.Management {
     public partial class MudClientForm : Form {
@@ -251,6 +250,11 @@ namespace MudClient.Management {
                 foreach (var output in outputs) {
                     // Debug.Write(output.Text);
                     // richTextBox.AppendFormattedText("X" + output.Text, output.TextColor);
+
+                    if (output.Beep) {
+                        SystemSounds.Beep.Play();
+                        continue;
+                    }
 
                     if (output.ReplaceCurrentLine) {
                         // richTextBox.ClearCurrentLine();

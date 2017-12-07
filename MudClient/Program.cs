@@ -54,7 +54,8 @@ namespace MudClient {
                 var outputWriter = new OutputWriter(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), clientInfoMultiplier.GetBlock(), form);
                 var devOutputWriter = new DevOutputWriter(devTextBuffer, sendMessageMultiplier.GetBlock(), form.DevViewForm);
                 var roomFinder = new RoomFinder(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), sendSpecialMessageMultiplier.GetBlock(), form.MapWindow);
-                var doorsHelper = new DoorsHelper(richTextMultiplier.GetBlock(), sendMessageBuffer, sendSpecialMessageMultiplier.GetBlock(), clientInfoBuffer, form.MapWindow);
+                var doorsCommands = new DoorsCommands(richTextMultiplier.GetBlock(), sendMessageBuffer, sendSpecialMessageMultiplier.GetBlock(), clientInfoBuffer, form.MapWindow);
+                var miscCommands = new MiscCommands(richTextMultiplier.GetBlock(), sendMessageBuffer, sendSpecialMessageMultiplier.GetBlock(), clientInfoBuffer);
                 var narrsWriter = new NarrsWriter(richTextMultiplier.GetBlock(), form);
                 outputWriter.LoopOnNewThread(cts.Token);
                 devOutputWriter.LoopOnNewThread(cts.Token);
@@ -64,7 +65,8 @@ namespace MudClient {
                 richTextMultiplier.LoopOnNewThread(cts.Token);
                 roomFinder.LoopOnNewThread(cts.Token);
                 narrsWriter.LoopOnNewThread(cts.Token);
-                doorsHelper.LoopOnNewThread(cts.Token);
+                doorsCommands.LoopOnNewThread(cts.Token);
+                miscCommands.LoopOnNewThread(cts.Token);
 
                 form.ShowDialog();
 			}

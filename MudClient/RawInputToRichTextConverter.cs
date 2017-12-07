@@ -109,6 +109,8 @@ namespace MudClient {
                     // carrige returns always have \x00 or a \n next to them so just ignore them
                 } else if (c == '\n') {
                     sb.Append('\n');
+                } else if (c == '\x07') {
+                    output.Add(new FormattedOutput { Beep = true });
                 } else {
                     sb.Append(c);
                 }
