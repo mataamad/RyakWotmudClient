@@ -41,6 +41,10 @@ namespace MudClient {
         }
 
         private async Task LoopFormattedOutput(CancellationToken cancellationToken) {
+            while (!_mapWindow.DataLoaded) {
+                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+            }
+
             while (!cancellationToken.IsCancellationRequested) {
                 List<FormattedOutput> outputs = await _outputBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
                 if (cancellationToken.IsCancellationRequested) {
@@ -104,7 +108,7 @@ namespace MudClient {
         // maybe useful at some point
         private async Task LoopSentMessage(CancellationToken cancellationToken) {
             while (!_mapWindow.DataLoaded) {
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
+                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
             }
 
             while (!cancellationToken.IsCancellationRequested) {

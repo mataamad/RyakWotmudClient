@@ -43,32 +43,35 @@ namespace MudClient {
 
         public MapWindow() {
             InitializeComponent();
+            LoadData();
         }
 
         public void LoadData() {
+            Task.Run(() => {
 
-            _dataLoader = new MapDataLoader();
-            _dataLoader.LoadData();
+                _dataLoader = new MapDataLoader();
+                _dataLoader.LoadData();
 
-            _roomsById = _dataLoader.Rooms.ToDictionary(room => room.ObjID.Value, room => room);
-            _roomsByZone = _dataLoader.Rooms.GroupBy(room => room.ZoneID.Value).ToDictionary(group => group.Key, group => group.ToArray());
-            _roomsByName = _dataLoader.Rooms.GroupBy(room => room.Name).ToDictionary(group => group.Key, group => group.ToArray());
-            _roomsByDescription = _dataLoader.Rooms.GroupBy(room => room.Desc).ToDictionary(group => group.Key, group => group.ToArray());
-            _roomsByFirstLineOfDescription = _dataLoader.Rooms.GroupBy(room => room.Desc.Split('\r','\n').FirstOrDefault().Trim()).ToDictionary(group => group.Key, group => group.ToArray());
+                _roomsById = _dataLoader.Rooms.ToDictionary(room => room.ObjID.Value, room => room);
+                _roomsByZone = _dataLoader.Rooms.GroupBy(room => room.ZoneID.Value).ToDictionary(group => group.Key, group => group.ToArray());
+                _roomsByName = _dataLoader.Rooms.GroupBy(room => room.Name).ToDictionary(group => group.Key, group => group.ToArray());
+                _roomsByDescription = _dataLoader.Rooms.GroupBy(room => room.Desc).ToDictionary(group => group.Key, group => group.ToArray());
+                _roomsByFirstLineOfDescription = _dataLoader.Rooms.GroupBy(room => room.Desc.Split('\r', '\n').FirstOrDefault().Trim()).ToDictionary(group => group.Key, group => group.ToArray());
 
-            _exitsById = _dataLoader.Exits.ToDictionary(exit => exit.ExitID.Value, exit => exit);
-            _exitsByFromRoom = _dataLoader.Exits.GroupBy(exit => exit.FromID.Value).ToDictionary(group => group.Key, group => group.ToArray());
-            _exitsByToRoom = _dataLoader.Exits.GroupBy(exit => exit.ToID.Value).ToDictionary(group => group.Key, group => group.ToArray());
+                _exitsById = _dataLoader.Exits.ToDictionary(exit => exit.ExitID.Value, exit => exit);
+                _exitsByFromRoom = _dataLoader.Exits.GroupBy(exit => exit.FromID.Value).ToDictionary(group => group.Key, group => group.ToArray());
+                _exitsByToRoom = _dataLoader.Exits.GroupBy(exit => exit.ToID.Value).ToDictionary(group => group.Key, group => group.ToArray());
 
-            _zones = _dataLoader.Zones;
+                _zones = _dataLoader.Zones;
 
-            DataLoaded = true;
-            this.Invalidate();
+                DataLoaded = true;
+                this.Invalidate();
+            });
         }
 
         // todo: tidy up all this scaling and offset stuff
         private void OnPaint(object sender, PaintEventArgs e) {
-            if (_dataLoader == null) {
+            if (!DataLoaded) {
                 return;
             }
 
@@ -208,6 +211,7 @@ namespace MudClient {
             HashSet<int> drawn = new HashSet<int>();
             foreach (var exitId in exitsInZone) {
                 var exit = _exitsById[exitId];
+                // todo: I'm pretty sure lines are still drawn twice
                 if (drawn.Contains(exit.ExitID.Value)) {
                     continue;
                 }
@@ -233,13 +237,22 @@ namespace MudClient {
 
                         if (exit.DirType.Value == (int)DirectionTypes.Up) {
                             // draw upwards facing triangle
-                            e.Graphics.DrawPolygon(Pens.Black, new[] { new Point(x1 - 4, y1 ), new Point(x1 - 2, y1 + 2), new Point(x1 - 6, y1 + 2) });
+                            e.Graphics.FillPolygon(Brushes.Black, new[] { new Point(x1 - 6, y1 ), new Point(x1 - 2, y1 + 4), new Point(x1 - 10, y1 + 4) });
+
+                            // has a door
+                            if (exit.ExitKindID.Value != 0) {
+                                e.Graphics.DrawRectangle(Pens.Black, x1 - 9, y1 , 6, 6);
+                            }
                         }
                         if (exit.DirType.Value == (int)DirectionTypes.Down) {
                             // draw downwards facing triangle
-                            e.Graphics.DrawPolygon(Pens.Black, new[] { new Point(x1 - 4, y1 + roomSize), new Point(x1 - 2, y1 - 2 + roomSize), new Point(x1 - 6, y1 - 2 + roomSize) });
+                            e.Graphics.FillPolygon(Brushes.Black, new[] { new Point(x1 - 5, y1 + roomSize), new Point(x1 - 2, y1 - 3 + roomSize), new Point(x1 - 8, y1 - 3 + roomSize) });
+
+                            // has a door
+                            if (exit.ExitKindID.Value != 0) {
+                                e.Graphics.DrawRectangle(Pens.Black, x1 - 9, y1 - 5 + roomSize, 6, 6);
+                            }
                         }
-                        // e.Graphics.DrawRectangle(penColor, 1, RoomSize/2, RoomSize/2);
 
                     } else {
                         // display lines straight out from rooms in the door direction initially, and then join them together
@@ -257,13 +270,13 @@ namespace MudClient {
                         int deltaX2 = 0;
                         int deltaY2 = 0;
 
-                        if (exit.DirType.Value == (int)DirectionTypes.North)
+                        if (exit.DirToType.Value == (int)DirectionTypes.South)
                             deltaY2 = 4 + roomSize / 2;
-                        if (exit.DirType.Value == (int)DirectionTypes.South)
+                        if (exit.DirToType.Value == (int)DirectionTypes.North)
                             deltaY2 = -4 - roomSize / 2;
-                        if (exit.DirType.Value == (int)DirectionTypes.West)
+                        if (exit.DirToType.Value == (int)DirectionTypes.East)
                             deltaX2 = 4 + roomSize / 2;
-                        if (exit.DirType.Value == (int)DirectionTypes.East)
+                        if (exit.DirToType.Value == (int)DirectionTypes.West)
                             deltaX2 = -4 - roomSize / 2;
 
                         if (hasToRoom) {
@@ -289,6 +302,26 @@ namespace MudClient {
                                 new Point(x1 + roomSize/2, y1 + roomSize/2),
                                 new Point(x1 + roomSize/2 + deltaX1, y1 + roomSize/2 + deltaY1)
                             });
+                        }
+
+                        // has a door
+                        if (exit.ExitKindID.Value != 0) {
+                            int doorDeltaX = 0;
+                            int doorDeltaY = 0;
+                            if (exit.DirType.Value == (int)DirectionTypes.North)
+                                doorDeltaX = -4;
+                                doorDeltaY = -4;
+                            if (exit.DirType.Value == (int)DirectionTypes.South)
+                                doorDeltaX = -4;
+                            if (exit.DirType.Value == (int)DirectionTypes.West)
+                                doorDeltaY = -4;
+                                doorDeltaX = -4;
+                            if (exit.DirType.Value == (int)DirectionTypes.East)
+                                doorDeltaY = -4;
+                                doorDeltaX = -4;
+
+                            e.Graphics.DrawRectangle(Pens.Black, x1 + roomSize / 2 + deltaX1 + doorDeltaX, y1 + roomSize / 2 + deltaY1 + doorDeltaY, 8, 8);
+                            // e.Graphics.FillRectangle(Brushes.Black, x1 + roomSize / 2 + deltaX1, y1 + roomSize / 2 + deltaY1, 8, 8);
                         }
 
                     }
@@ -373,9 +406,6 @@ namespace MudClient {
         }
 
         public void RoomVisited(Room room) {
-            if (_dataLoader == null) {
-                LoadData();
-            }
 
             // for testing purposes I'm just jumping to the first room with the same room name
             ZmudDbOjectTblRow[] possibleRoomsByName = null;
