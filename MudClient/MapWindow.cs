@@ -453,5 +453,14 @@ namespace MudClient {
         private void MapWindow_SizeChanged(object sender, EventArgs e) {
             ((Control)sender).Invalidate();
         }
+
+        // todo: this probably shouldn't be accessed from here
+        public ZmudDbExitTblRow[] GetCurrentRoomExits() {
+            if (!_exitsByFromRoom.TryGetValue(_currentVirtualRoomId, out var exits)) {
+                return new ZmudDbExitTblRow[0];
+            }
+
+            return exits;
+        }
     }
 }

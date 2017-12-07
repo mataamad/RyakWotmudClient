@@ -24,6 +24,7 @@ namespace MudClient {
         NW = 7,
         Up = 8,
         Down = 9,
+        Other = 999,
     }
 
     public class ZmudDbOjectTblRow {

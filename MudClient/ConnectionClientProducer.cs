@@ -92,10 +92,8 @@ namespace MudClient {
                 }
 
                 if (_tcpClient.Connected) {
-                    if (message.Trim().ToLower() != "qf") { // todo: ugly hack hah
-                        await _controlWriter.WriteLineAsync(message);
-                        await _controlWriter.FlushAsync();
-                    }
+                    await _controlWriter.WriteLineAsync(message);
+                    await _controlWriter.FlushAsync();
                 }
             }
         }

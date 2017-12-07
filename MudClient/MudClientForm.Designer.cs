@@ -34,11 +34,11 @@ namespace MudClient.Management {
             this.devWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.controlPanel = new System.Windows.Forms.Panel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.narrsRichTextBox = new System.Windows.Forms.RichTextBox();
             this.richTextBox = new System.Windows.Forms.RichTextBox();
             this.textBox = new System.Windows.Forms.TextBox();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.narrsRichTextBox = new System.Windows.Forms.RichTextBox();
             this.menuStrip.SuspendLayout();
             this.controlPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -123,8 +123,21 @@ namespace MudClient.Management {
             // 
             this.splitContainer1.Panel2.Controls.Add(this.richTextBox);
             this.splitContainer1.Size = new System.Drawing.Size(784, 935);
-            this.splitContainer1.SplitterDistance = 99;
+            this.splitContainer1.SplitterDistance = 173;
             this.splitContainer1.TabIndex = 5;
+            // 
+            // narrsRichTextBox
+            // 
+            this.narrsRichTextBox.BackColor = System.Drawing.Color.Silver;
+            this.narrsRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.narrsRichTextBox.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.narrsRichTextBox.ForeColor = System.Drawing.Color.Black;
+            this.narrsRichTextBox.HideSelection = false;
+            this.narrsRichTextBox.Location = new System.Drawing.Point(0, 0);
+            this.narrsRichTextBox.Name = "narrsRichTextBox";
+            this.narrsRichTextBox.Size = new System.Drawing.Size(784, 173);
+            this.narrsRichTextBox.TabIndex = 3;
+            this.narrsRichTextBox.Text = "";
             // 
             // richTextBox
             // 
@@ -135,7 +148,7 @@ namespace MudClient.Management {
             this.richTextBox.HideSelection = false;
             this.richTextBox.Location = new System.Drawing.Point(0, 0);
             this.richTextBox.Name = "richTextBox";
-            this.richTextBox.Size = new System.Drawing.Size(784, 832);
+            this.richTextBox.Size = new System.Drawing.Size(784, 758);
             this.richTextBox.TabIndex = 2;
             this.richTextBox.Text = "";
             // 
@@ -162,19 +175,6 @@ namespace MudClient.Management {
             this.toolStripStatusLabel.Name = "toolStripStatusLabel";
             this.toolStripStatusLabel.Size = new System.Drawing.Size(82, 17);
             this.toolStripStatusLabel.Text = "Disconnected.";
-            // 
-            // narrsRichTextBox
-            // 
-            this.narrsRichTextBox.BackColor = System.Drawing.Color.Silver;
-            this.narrsRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.narrsRichTextBox.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.narrsRichTextBox.ForeColor = System.Drawing.Color.Black;
-            this.narrsRichTextBox.HideSelection = false;
-            this.narrsRichTextBox.Location = new System.Drawing.Point(0, 0);
-            this.narrsRichTextBox.Name = "narrsRichTextBox";
-            this.narrsRichTextBox.Size = new System.Drawing.Size(784, 99);
-            this.narrsRichTextBox.TabIndex = 3;
-            this.narrsRichTextBox.Text = "";
             // 
             // MudClientForm
             // 

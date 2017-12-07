@@ -11,6 +11,7 @@ namespace MudClient {
     public class RoomFinder {
         private readonly BufferBlock<List<FormattedOutput>> _outputBuffer;
         private readonly BufferBlock<string> _sentMessageBuffer;
+        private readonly BufferBlock<string> _sendSpecialMessageBuffer;
 
         public class Room {
             public string Name;
@@ -21,9 +22,10 @@ namespace MudClient {
 
         private readonly MapWindow _mapWindow;
 
-        public RoomFinder(BufferBlock<List<FormattedOutput>> outputBuffer, BufferBlock<string> sentMessageBuffer, MapWindow mapWindow) {
+        public RoomFinder(BufferBlock<List<FormattedOutput>> outputBuffer, BufferBlock<string> sentMessageBuffer, BufferBlock<string> sendSpecialMessageBuffer, MapWindow mapWindow) {
             _outputBuffer = outputBuffer;
             _sentMessageBuffer = sentMessageBuffer;
+            _sendSpecialMessageBuffer = sendSpecialMessageBuffer;
             _mapWindow = mapWindow;
         }
 
@@ -31,6 +33,7 @@ namespace MudClient {
         {
             Task.Run(() => LoopFormattedOutput(cancellationToken));
             Task.Run(() => LoopSentMessage(cancellationToken));
+            Task.Run(() => LoopSpecialMessage(cancellationToken));
         }
 
         private enum RoomSeenState {
@@ -105,7 +108,6 @@ namespace MudClient {
             }
         }
 
-        // maybe useful at some point
         private async Task LoopSentMessage(CancellationToken cancellationToken) {
             while (!_mapWindow.DataLoaded) {
                 await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
@@ -119,7 +121,26 @@ namespace MudClient {
 
                 // process the command the player entered
                 output = output.Trim().ToLower();
-                if (new[] { "qf", "n", "s", "e", "w", "u", "d" }.Contains(output)) {
+                if (new[] { "n", "s", "e", "w", "u", "d" }.Contains(output)) {
+                    _mapWindow.MoveVirtualRoom(output);
+                }
+            }
+        }
+
+        private async Task LoopSpecialMessage(CancellationToken cancellationToken) {
+            while (!_mapWindow.DataLoaded) {
+                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+            }
+
+            while (!cancellationToken.IsCancellationRequested) {
+                string output = await _sendSpecialMessageBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
+                if (cancellationToken.IsCancellationRequested) {
+                    return;
+                }
+
+                // process the command the player entered
+                output = output.Trim().ToLower();
+                if (output == "qf") {
                     _mapWindow.MoveVirtualRoom(output);
                 }
             }

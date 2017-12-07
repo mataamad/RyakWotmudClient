@@ -9,6 +9,19 @@ namespace MudClient.Common {
     public class Aliases {
         public Dictionary<string, AliasRow> Dictionary { get; private set; } = null;
 
+        public HashSet<string> SpecialAliasesDictionary { get; private set; } = new HashSet<string> {
+            "qf",
+
+            "o", "c", "cll", "opp", "unl", "loc", "pic", // fast open
+            // "oi", "cd", // open/close seen door (e.g bump into a door, saves here)
+            "on", "oe", "os", "ow", "ou", "od",
+            "sn", "se", "ss", "sw", "su", "sd",
+            "locn", "loce", "locs", "locw", "locu", "locd",
+            "unln", "unle", "unls", "unlw", "unlu", "unld",
+            "picn", "pice", "pics", "pic", "picu", "picd",
+            // "setdoor" // save a door on the map - requires being able to save the map
+        };
+
         public class AliasRow {
             public string Alias;
             public string MapsTo;

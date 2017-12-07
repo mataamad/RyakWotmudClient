@@ -30,6 +30,7 @@ namespace MudClient.Management {
 
         private readonly CancellationToken _cancellationToken;
         private readonly BufferBlock<string> _sendMessageBuffer;
+        private readonly BufferBlock<string> _sendSpecialMessageBuffer;
         private readonly BufferBlock<string> _clientInfoBuffer;
 
         private readonly Aliases _aliases = new Aliases();
@@ -41,10 +42,12 @@ namespace MudClient.Management {
             CancellationToken cancellationToken,
             ConnectionClientProducer connectionClientProducer,
             BufferBlock<string> sendMessageBuffer,
+            BufferBlock<string> sendSpecialMessageBuffer,
             BufferBlock<string> clientInfoBuffer) {
             _connectionClientProducer = connectionClientProducer;
             _cancellationToken = cancellationToken;
             _sendMessageBuffer = sendMessageBuffer;
+            _sendSpecialMessageBuffer = sendSpecialMessageBuffer;
             _clientInfoBuffer = clientInfoBuffer;
 			InitializeComponent();
 			this.KeyPreview = true;
@@ -124,8 +127,10 @@ namespace MudClient.Management {
                             return;
                         } else if (_aliases.Dictionary.TryGetValue(inputLine, out var alias)) {
                             await HandleInput(alias.MapsTo);
+                        } else if (_aliases.SpecialAliasesDictionary.Contains(inputStringSplit[0])) {
+                            await _sendSpecialMessageBuffer.SendAsync(inputLine);
                         } else {
-                            await SendMessage(inputLine);
+                            await _sendMessageBuffer.SendAsync(inputLine);
                         }
 						break;
 				}
@@ -134,10 +139,6 @@ namespace MudClient.Management {
 			}
             textBox.SelectAll();
 		}
-
-		private async Task SendMessage(string inputLine) {
-            await _sendMessageBuffer.SendAsync(inputLine);
-        }
 
 		private void ProcessHotKeyCommand(string[] inputParts) {
 			if (inputParts.Length != 3) {
@@ -201,8 +202,8 @@ namespace MudClient.Management {
             onConnectionEstablished = async (args) => {
                 var lines = File.ReadAllLines("./quickconnect.txt");
                 if (lines.Length > 1) {
-                    await this.SendMessage(lines[0]);
-                    await this.SendMessage(lines[1]);
+                    await _sendMessageBuffer.SendAsync(lines[0]);
+                    await _sendMessageBuffer.SendAsync(lines[1]);
                 }
                 _connectionClientProducer.OnConnectionEstablished -= onConnectionEstablished;
             };

@@ -25,9 +25,11 @@ namespace MudClient {
             BufferBlock<string> devTextBuffer = new BufferBlock<string>();
 
             BufferBlock<string> sendMessageBuffer = new BufferBlock<string>();
+            BufferBlock<string> sendSpecialMessageBuffer = new BufferBlock<string>();
             BufferBlock<string> clientInfoBuffer = new BufferBlock<string>();
             var tcpReceiveMultiplier = new BufferBlockMultiplier<string>(tcpReceiveBuffer);
             var sendMessageMultiplier = new BufferBlockMultiplier<string>(sendMessageBuffer);
+            var sendSpecialMessageMultiplier = new BufferBlockMultiplier<string>(sendSpecialMessageBuffer);
             var clientInfoMultiplier = new BufferBlockMultiplier<string>(clientInfoBuffer);
             var richTextMultiplier = new BufferBlockMultiplier<List<FormattedOutput>>(richTextBuffer);
 
@@ -48,18 +50,21 @@ namespace MudClient {
             tcpReceiveMultiplier.LoopOnNewThread(cts.Token);
             csvWriter.LoopOnNewThread(cts.Token);
 
-			using (var form = new MudClientForm(cts.Token, connectionClientProducer, sendMessageBuffer, clientInfoBuffer)) {
+			using (var form = new MudClientForm(cts.Token, connectionClientProducer, sendMessageBuffer, sendSpecialMessageBuffer, clientInfoBuffer)) {
                 var outputWriter = new OutputWriter(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), clientInfoMultiplier.GetBlock(), form);
                 var devOutputWriter = new DevOutputWriter(devTextBuffer, sendMessageMultiplier.GetBlock(), form.DevViewForm);
-                var roomFinder = new RoomFinder(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), form.MapWindow);
+                var roomFinder = new RoomFinder(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), sendSpecialMessageMultiplier.GetBlock(), form.MapWindow);
+                var doorsHelper = new DoorsHelper(richTextMultiplier.GetBlock(), sendMessageBuffer, sendSpecialMessageMultiplier.GetBlock(), clientInfoBuffer, form.MapWindow);
                 var narrsWriter = new NarrsWriter(richTextMultiplier.GetBlock(), form);
                 outputWriter.LoopOnNewThread(cts.Token);
                 devOutputWriter.LoopOnNewThread(cts.Token);
                 sendMessageMultiplier.LoopOnNewThread(cts.Token);
                 clientInfoMultiplier.LoopOnNewThread(cts.Token);
+                sendSpecialMessageMultiplier.LoopOnNewThread(cts.Token);
                 richTextMultiplier.LoopOnNewThread(cts.Token);
                 roomFinder.LoopOnNewThread(cts.Token);
                 narrsWriter.LoopOnNewThread(cts.Token);
+                doorsHelper.LoopOnNewThread(cts.Token);
 
                 form.ShowDialog();
 			}
