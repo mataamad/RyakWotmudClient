@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 namespace MudClient {
-    public class DoorsHelper {
+    public class DoorsCommands {
         private readonly BufferBlock<List<FormattedOutput>> _outputBuffer;
         private readonly BufferBlock<string> _sendMessageBuffer;
         private readonly BufferBlock<string> _sendSpecialMessageBuffer;
@@ -16,7 +16,7 @@ namespace MudClient {
 
         private readonly MapWindow _mapWindow;
 
-        public DoorsHelper(BufferBlock<List<FormattedOutput>> outputBuffer,
+        public DoorsCommands(BufferBlock<List<FormattedOutput>> outputBuffer,
             BufferBlock<string> sendMessageBuffer,
             BufferBlock<string> sendSpecialMessageBuffer,
             BufferBlock<string> clientInfoBuffer,

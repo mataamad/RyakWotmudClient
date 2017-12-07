@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Aliases.cs" />
+    <Compile Include="MiscCommands.cs" />
     <Compile Include="Extensions\DataFlowBlockExtensions.cs" />
     <Compile Include="FormattedOutput.cs" />
     <Compile Include="Helpers\ControlCharacterEncoder.cs" />
@@ -70,7 +71,7 @@
     </Compile>
     <Compile Include="MapDataLoader.cs" />
     <Compile Include="NarrsWriter.cs" />
-    <Compile Include="DoorsHelper.cs" />
+    <Compile Include="DoorsCommands.cs" />
     <Compile Include="RoomFinder.cs" />
     <Compile Include="Tests\SmokeTests.cs" />
     <Compile Include="ZmudDbTypes.cs" />

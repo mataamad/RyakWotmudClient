@@ -20,6 +20,13 @@ namespace MudClient.Common {
             "unln", "unle", "unls", "unlw", "unlu", "unld",
             "picn", "pice", "pics", "pic", "picu", "picd",
             // "setdoor" // save a door on the map - requires being able to save the map
+
+            "sr", "q", "a", "]",
+            "tp", "p", "i",
+            "tm", "m",
+            "sc",
+            "og", "ogk",
+
         };
 
         public class AliasRow {
