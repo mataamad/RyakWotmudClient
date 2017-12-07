@@ -413,6 +413,7 @@ namespace MudClient {
 
             if (possibleRoomsByName == null) {
                 // no rooms found with the same name.  For now just return
+                // ideally instead might look at what direction was moved to get to this room
                 return;
             }
             if (possibleRoomsByName.Length == 1) {
@@ -428,21 +429,72 @@ namespace MudClient {
                 possibleRooms = new ZmudDbOjectTblRow[0];
             }
 
-            if (possibleRooms.Any()) {
-                // todo: currently takes first if there are multiple
-                _currentRoomId = possibleRooms[0].ObjID.Value;
-                Invalidate();
-                return;
-            } else {
+            if (!possibleRooms.Any()) {
                 // the zmud mapper only uses the first line of the description so it's more likely to be correct
                 if (_roomsByFirstLineOfDescription.TryGetValue(room.Description.Split('\n').FirstOrDefault().Trim(), out ZmudDbOjectTblRow[] roomsWithSameFirstLineDescription)) {
                     possibleRooms = roomsWithSameFirstLineDescription.Intersect(possibleRoomsByName).ToArray();
                     if (possibleRooms.Any()) {
                         // todo: currently takes first if there are multiple
-                        _currentRoomId = possibleRooms[0].ObjID.Value;
-                        Invalidate();
                     }
                 }
+            }
+
+            if (possibleRooms.Length == 0) {
+                return;
+            }
+
+            if (possibleRooms.Length == 1) {
+                _currentRoomId = possibleRooms[0].ObjID.Value;
+                Invalidate();
+                return;
+            }
+
+            // [ obvious exits: N S W D ]
+            var seenExits = new HashSet<string>(room.ExitsLine.Trim().Replace("[ obvious exits:", "").Replace(" ]", "").Split(' ').Where(s => !string.IsNullOrEmpty(s)));
+            // try matching on exits.
+            var possibleRoomsWithExits = new List<ZmudDbOjectTblRow>();
+            foreach (var possibleRoom in possibleRooms) {
+                ZmudDbExitTblRow[] exits = new ZmudDbExitTblRow[0];
+                _exitsByFromRoom.TryGetValue(possibleRoom.ObjID.Value, out exits);
+
+                int seen = 0;
+                int unseen = 0;
+                foreach (var exit in exits) {
+                    if (seenExits.Contains(DirectionToExitString((DirectionTypes)exit.DirType.Value))) {
+                        seen++;
+                    } else if (string.IsNullOrEmpty(exit.Param)) {
+                        // we aren't marking rooms with doors as unseen as some of them can be hidden. It'd be nice to only apply this for doors that can be hidden.
+                        unseen++;
+                    }
+                }
+                if (seen == seenExits.Count && unseen == 0) {
+                    possibleRoomsWithExits.Add(possibleRoom);
+                }
+            }
+
+            if (possibleRoomsWithExits.Any()) {
+                _currentRoomId = possibleRoomsWithExits[0].ObjID.Value;
+                Invalidate();
+                return;
+            }
+        }
+
+        private string DirectionToExitString(DirectionTypes direction) {
+            switch (direction) {
+                case DirectionTypes.Up:
+                    return "U";
+                case DirectionTypes.Down:
+                    return "D";
+                case DirectionTypes.North:
+                    return "N";
+                case DirectionTypes.South:
+                    return "S";
+                case DirectionTypes.East:
+                    return "E";
+                case DirectionTypes.West:
+                    return "W";
+                default:
+                    throw new Exception();
             }
         }
 

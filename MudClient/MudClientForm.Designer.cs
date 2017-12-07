@@ -159,6 +159,7 @@ namespace MudClient.Management {
             this.textBox.Name = "textBox";
             this.textBox.Size = new System.Drawing.Size(784, 20);
             this.textBox.TabIndex = 3;
+            this.textBox.Click += new System.EventHandler(this.textBox_Click);
             // 
             // statusStrip
             // 
