@@ -308,7 +308,7 @@ namespace MudClient.Management {
         }
 
         private void textBox_Click(object sender, EventArgs e) {
-            this.textBox.SelectAll();
+            // this.textBox.SelectAll();
         }
     }
 }
