@@ -2,16 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using static MudClient.RawInputToRichTextConverter;
-using static MudClient.RoomFinder;
 
 namespace MudClient {
-	public class Program {
+    public class Program {
 
-        // public const bool ReadFromLogFile = true;
-        public const bool ReadFromLogFile = false;
+        public const bool ReadFromLogFile = true;
+        // public const bool ReadFromLogFile = false;
         // public const string LogFilename = "./test_bash.csv";
         // public const string LogFilename = "./test_only_bash.csv";
         // public const string LogFilename = "./Log_2017-11-27 17-34-35.csv";

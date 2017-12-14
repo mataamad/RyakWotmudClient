@@ -15,15 +15,15 @@ namespace MudClient {
 
         private MapDataLoader _dataLoader;
 
-        private Dictionary<int, ZmudDbOjectTblRow> _roomsById;
-        private Dictionary<int, ZmudDbOjectTblRow[]> _roomsByZone;
-        private Dictionary<string, ZmudDbOjectTblRow[]> _roomsByName;
-        private Dictionary<string, ZmudDbOjectTblRow[]> _roomsByDescription;
-        private Dictionary<string, ZmudDbOjectTblRow[]> _roomsByFirstLineOfDescription;
+        public Dictionary<int, ZmudDbOjectTblRow> RoomsById { get; private set; }
+        public Dictionary<int, ZmudDbOjectTblRow[]> RoomsByZone { get; private set; }
+        public Dictionary<string, ZmudDbOjectTblRow[]> RoomsByName { get; private set; }
+        public Dictionary<string, ZmudDbOjectTblRow[]> RoomsByDescription { get; private set; }
+        public Dictionary<string, ZmudDbOjectTblRow[]> RoomsByFirstLineOfDescription { get; private set; }
 
-        private Dictionary<int, ZmudDbExitTblRow> _exitsById;
-        private Dictionary<int, ZmudDbExitTblRow[]> _exitsByFromRoom;
-        private Dictionary<int, ZmudDbExitTblRow[]> _exitsByToRoom;
+        public Dictionary<int, ZmudDbExitTblRow> ExitsById;
+        public Dictionary<int, ZmudDbExitTblRow[]> ExitsByFromRoom;
+        public Dictionary<int, ZmudDbExitTblRow[]> ExitsByToRoom;
 
         private ZmudDbZoneTbl[] _zones;
 
@@ -32,8 +32,9 @@ namespace MudClient {
         private const double MaxScaling = 0.08;
         private const double MinScaling = 0.1;
 
-        private int _currentRoomId = 0;
-        private int _currentVirtualRoomId = -1;
+        public int CurrentRoomId { get; set; } = 0;
+        public int CurrentVirtualRoomId { get; set; } = -1;
+        public int CurrentSmartRoomId { get; set; } = -1;
 
         private int _prevOffsetX = 0;
         private int _prevOffsetY = 0;
@@ -52,15 +53,15 @@ namespace MudClient {
                 _dataLoader = new MapDataLoader();
                 _dataLoader.LoadData();
 
-                _roomsById = _dataLoader.Rooms.ToDictionary(room => room.ObjID.Value, room => room);
-                _roomsByZone = _dataLoader.Rooms.GroupBy(room => room.ZoneID.Value).ToDictionary(group => group.Key, group => group.ToArray());
-                _roomsByName = _dataLoader.Rooms.GroupBy(room => room.Name).ToDictionary(group => group.Key, group => group.ToArray());
-                _roomsByDescription = _dataLoader.Rooms.GroupBy(room => room.Desc).ToDictionary(group => group.Key, group => group.ToArray());
-                _roomsByFirstLineOfDescription = _dataLoader.Rooms.GroupBy(room => room.Desc.Split('\r', '\n').FirstOrDefault().Trim()).ToDictionary(group => group.Key, group => group.ToArray());
+                RoomsById = _dataLoader.Rooms.ToDictionary(room => room.ObjID.Value, room => room);
+                RoomsByZone = _dataLoader.Rooms.GroupBy(room => room.ZoneID.Value).ToDictionary(group => group.Key, group => group.ToArray());
+                RoomsByName = _dataLoader.Rooms.GroupBy(room => room.Name).ToDictionary(group => group.Key, group => group.ToArray());
+                RoomsByDescription = _dataLoader.Rooms.GroupBy(room => room.Desc).ToDictionary(group => group.Key, group => group.ToArray());
+                RoomsByFirstLineOfDescription = _dataLoader.Rooms.GroupBy(room => room.Desc.Split('\r', '\n').FirstOrDefault().Trim()).ToDictionary(group => group.Key, group => group.ToArray());
 
-                _exitsById = _dataLoader.Exits.ToDictionary(exit => exit.ExitID.Value, exit => exit);
-                _exitsByFromRoom = _dataLoader.Exits.GroupBy(exit => exit.FromID.Value).ToDictionary(group => group.Key, group => group.ToArray());
-                _exitsByToRoom = _dataLoader.Exits.GroupBy(exit => exit.ToID.Value).ToDictionary(group => group.Key, group => group.ToArray());
+                ExitsById = _dataLoader.Exits.ToDictionary(exit => exit.ExitID.Value, exit => exit);
+                ExitsByFromRoom = _dataLoader.Exits.GroupBy(exit => exit.FromID.Value).ToDictionary(group => group.Key, group => group.ToArray());
+                ExitsByToRoom = _dataLoader.Exits.GroupBy(exit => exit.ToID.Value).ToDictionary(group => group.Key, group => group.ToArray());
 
                 _zones = _dataLoader.Zones;
 
@@ -77,33 +78,33 @@ namespace MudClient {
 
             Graphics g = e.Graphics;
 
-            bool currentRoomExists = _roomsById.ContainsKey(_currentRoomId);
-            bool currentVirtualRoomExists = _roomsById.ContainsKey(_currentVirtualRoomId);
+            bool currentRoomExists = RoomsById.ContainsKey(CurrentRoomId);
+            bool currentVirtualRoomExists = RoomsById.ContainsKey(CurrentVirtualRoomId);
 
             ZmudDbOjectTblRow currentRoom = null;
             if (currentVirtualRoomExists) {
-                currentRoom = _roomsById[_currentVirtualRoomId];
+                currentRoom = RoomsById[CurrentVirtualRoomId];
             } else if (currentRoomExists) {
-                _currentVirtualRoomId = _currentRoomId;
-                currentRoom = _roomsById[_currentVirtualRoomId];
+                CurrentVirtualRoomId = CurrentRoomId;
+                currentRoom = RoomsById[CurrentVirtualRoomId];
             } else {
                 return;
             }
 
             var currentZoneId = currentRoom.ZoneID.Value;
 
-            var roomsInZone = _roomsByZone[currentZoneId];
+            var roomsInZone = RoomsByZone[currentZoneId];
 
             // todo: could cache this
             HashSet<int> exitsInZone = new HashSet<int>();
             foreach (var room in roomsInZone) {
-                if (_exitsByFromRoom.ContainsKey(room.ObjID.Value)) {
-                    foreach (var exit in _exitsByFromRoom[room.ObjID.Value]) {
+                if (ExitsByFromRoom.ContainsKey(room.ObjID.Value)) {
+                    foreach (var exit in ExitsByFromRoom[room.ObjID.Value]) {
                         exitsInZone.Add(exit.ExitID.Value);
                     }
                 }
-                if (_exitsByToRoom.ContainsKey(room.ObjID.Value)) {
-                    foreach (var exit in _exitsByToRoom[room.ObjID.Value]) {
+                if (ExitsByToRoom.ContainsKey(room.ObjID.Value)) {
+                    foreach (var exit in ExitsByToRoom[room.ObjID.Value]) {
                         exitsInZone.Add(exit.ExitID.Value);
                     }
                 }
@@ -111,10 +112,8 @@ namespace MudClient {
 
             var minX = roomsInZone.Min(o => o.X.Value);
             var minY = roomsInZone.Min(o => o.Y.Value);
-            // var minZ = roomsInZone.Min(o => o.Z.Value);
             var maxX = roomsInZone.Max(o => o.X.Value);
             var maxY = roomsInZone.Max(o => o.Y.Value);
-            // var maxZ = roomsInZone.Max(o => o.Z.Value);
 
             var screenWidth = e.ClipRectangle.Width;
             var screenHeight = e.ClipRectangle.Height;
@@ -199,29 +198,19 @@ namespace MudClient {
             _prevOffsetY = offsetY;
 
 
-            /*
-             * ExitIDTo - the exitTable entry that pairs with this one (-1 if no pair)
-            KindId - 0 normal / 1 door / 2 locked door
-            DirType - the direction that it's in
-            DirToType - I assume this always mirros the ExitIDTo DirType?
-            Param - the door name
-
-            Name, Label - at a glance always empty
-            */
             HashSet<int> drawn = new HashSet<int>();
             foreach (var exitId in exitsInZone) {
-                var exit = _exitsById[exitId];
+                var exit = ExitsById[exitId];
                 // todo: I'm pretty sure lines are still drawn twice
                 if (drawn.Contains(exit.ExitID.Value)) {
                     continue;
                 }
 
-                bool hasFromRoom = _roomsById.TryGetValue(exit.FromID.Value, out var fromRoom);
-                bool hasToRoom = _roomsById.TryGetValue(exit.ToID.Value, out var toRoom);
+                bool hasFromRoom = RoomsById.TryGetValue(exit.FromID.Value, out var fromRoom);
+                bool hasToRoom = RoomsById.TryGetValue(exit.ToID.Value, out var toRoom);
                 hasToRoom = hasToRoom && toRoom.ZoneID.Value == currentZoneId;
                 hasFromRoom = hasFromRoom && fromRoom.ZoneID.Value == currentZoneId;
 
-                // todo: handle rooms that go out of zone
                 if (hasFromRoom) {
                     int x1 = (int)(scale * (fromRoom.X.Value - minX)) + offsetX;
                     int y1 = (int)(scale * (fromRoom.Y.Value - minY)) + offsetY;
@@ -232,10 +221,10 @@ namespace MudClient {
                         y2 = (int)(scale * (toRoom.Y.Value - minY)) + offsetY;
                     }
 
-                    if (exit.DirType.Value == (int)DirectionTypes.Up || exit.DirType.Value == (int)DirectionTypes.Down) {
+                    if (exit.DirType.Value == (int)DirectionType.Up || exit.DirType.Value == (int)DirectionType.Down) {
                         // draw up/down exits
 
-                        if (exit.DirType.Value == (int)DirectionTypes.Up) {
+                        if (exit.DirType.Value == (int)DirectionType.Up) {
                             // draw upwards facing triangle
                             e.Graphics.FillPolygon(Brushes.Black, new[] { new Point(x1 - 6, y1 ), new Point(x1 - 2, y1 + 4), new Point(x1 - 10, y1 + 4) });
 
@@ -244,7 +233,7 @@ namespace MudClient {
                                 e.Graphics.DrawRectangle(Pens.Black, x1 - 9, y1 , 6, 6);
                             }
                         }
-                        if (exit.DirType.Value == (int)DirectionTypes.Down) {
+                        if (exit.DirType.Value == (int)DirectionType.Down) {
                             // draw downwards facing triangle
                             e.Graphics.FillPolygon(Brushes.Black, new[] { new Point(x1 - 5, y1 + roomSize), new Point(x1 - 2, y1 - 3 + roomSize), new Point(x1 - 8, y1 - 3 + roomSize) });
 
@@ -258,25 +247,25 @@ namespace MudClient {
                         // display lines straight out from rooms in the door direction initially, and then join them together
                         int deltaX1 = 0;
                         int deltaY1 = 0;
-                        if (exit.DirType.Value == (int)DirectionTypes.North)
+                        if (exit.DirType.Value == (int)DirectionType.North)
                             deltaY1 = -4 - roomSize/2;
-                        if (exit.DirType.Value == (int)DirectionTypes.South)
+                        if (exit.DirType.Value == (int)DirectionType.South)
                             deltaY1 = 4 + roomSize / 2;
-                        if (exit.DirType.Value == (int)DirectionTypes.West)
+                        if (exit.DirType.Value == (int)DirectionType.West)
                             deltaX1 = -4 - roomSize / 2;
-                        if (exit.DirType.Value == (int)DirectionTypes.East)
+                        if (exit.DirType.Value == (int)DirectionType.East)
                             deltaX1 = 4 + roomSize / 2;
 
                         int deltaX2 = 0;
                         int deltaY2 = 0;
 
-                        if (exit.DirToType.Value == (int)DirectionTypes.South)
+                        if (exit.DirToType.Value == (int)DirectionType.South)
                             deltaY2 = 4 + roomSize / 2;
-                        if (exit.DirToType.Value == (int)DirectionTypes.North)
+                        if (exit.DirToType.Value == (int)DirectionType.North)
                             deltaY2 = -4 - roomSize / 2;
-                        if (exit.DirToType.Value == (int)DirectionTypes.East)
+                        if (exit.DirToType.Value == (int)DirectionType.East)
                             deltaX2 = 4 + roomSize / 2;
-                        if (exit.DirToType.Value == (int)DirectionTypes.West)
+                        if (exit.DirToType.Value == (int)DirectionType.West)
                             deltaX2 = -4 - roomSize / 2;
 
                         if (hasToRoom) {
@@ -308,15 +297,15 @@ namespace MudClient {
                         if (exit.ExitKindID.Value != 0) {
                             int doorDeltaX = 0;
                             int doorDeltaY = 0;
-                            if (exit.DirType.Value == (int)DirectionTypes.North)
+                            if (exit.DirType.Value == (int)DirectionType.North)
                                 doorDeltaX = -4;
                                 doorDeltaY = -4;
-                            if (exit.DirType.Value == (int)DirectionTypes.South)
+                            if (exit.DirType.Value == (int)DirectionType.South)
                                 doorDeltaX = -4;
-                            if (exit.DirType.Value == (int)DirectionTypes.West)
+                            if (exit.DirType.Value == (int)DirectionType.West)
                                 doorDeltaY = -4;
                                 doorDeltaX = -4;
-                            if (exit.DirType.Value == (int)DirectionTypes.East)
+                            if (exit.DirType.Value == (int)DirectionType.East)
                                 doorDeltaY = -4;
                                 doorDeltaX = -4;
 
@@ -339,19 +328,23 @@ namespace MudClient {
                 var color = Color.FromArgb((rgb >> 0) & 0xff, (rgb >> 8) & 0xff, (rgb >> 16) & 0xff);
                 Brush fillBrush = new SolidBrush(color);
                 // var fillBrush = Brushes.LightGray;
-                if (room.ObjID.Value == _currentVirtualRoomId) {
+                if (room.ObjID.Value == CurrentVirtualRoomId) {
                     e.Graphics.DrawRectangle(Pens.Red, x-2, y-2, roomSize+4, roomSize+4); // draw a red hilight around the current spammed-to room
 
-                    if (_currentVirtualRoomId == _currentRoomId) {
+                    if (CurrentVirtualRoomId == CurrentRoomId) {
                         fillBrush = Brushes.Purple;
                     } else {
                         fillBrush = Brushes.Green;
                     }
-                } else if (room.ObjID.Value == _currentRoomId) {
+                } else if (room.ObjID.Value == CurrentRoomId) {
                     fillBrush = Brushes.IndianRed;
                 }
                 e.Graphics.FillRectangle(fillBrush, x, y, roomSize, roomSize);
                 e.Graphics.DrawRectangle(Pens.Black, x, y, roomSize, roomSize);
+
+                if (room.ObjID.Value == CurrentSmartRoomId) {
+                    e.Graphics.FillRectangle(Brushes.HotPink, x+2, y+2, roomSize-4, roomSize-4);
+                }
 
                 if (!string.IsNullOrEmpty(room.IDName)) {
                     var font = new Font(SystemFonts.DefaultFont.FontFamily, 10, FontStyle.Regular);
@@ -364,140 +357,6 @@ namespace MudClient {
 
         }
 
-        public void MoveVirtualRoom(string movement) {
-            movement = movement.Trim().ToLower();
-            if (movement == "qf") {
-                _currentVirtualRoomId = _currentRoomId;
-                Invalidate();
-            } else {
-                // nsewud follow directions
-                bool inValidRoom = _roomsById.TryGetValue(_currentVirtualRoomId, out var currentRoom);
-                if (!inValidRoom) {
-                    return;
-                }
-                 
-                bool roomHasExits = _exitsByFromRoom.TryGetValue(_currentVirtualRoomId, out var currentExits);
-                if (!roomHasExits) {
-                    return;
-                }
-
-                var stringToDirections = new Dictionary<string, DirectionTypes> {
-                    { "n", DirectionTypes.North },
-                    { "e", DirectionTypes.East },
-                    { "s", DirectionTypes.South },
-                    { "w", DirectionTypes.West },
-                    { "u", DirectionTypes.Up },
-                    { "d", DirectionTypes.Down },
-                };
-
-                bool directionFound = stringToDirections.TryGetValue(movement, out var direction);
-                if (!directionFound) {
-                    return;
-                }
-
-                var link = currentExits.FirstOrDefault(exit => exit.DirType.Value == (int)direction);
-                if (link == null) {
-                    return;
-                }
-                _currentVirtualRoomId = link.ToID.Value;
-
-                Invalidate();
-            }
-        }
-
-        public void RoomVisited(Room room) {
-
-            // for testing purposes I'm just jumping to the first room with the same room name
-            ZmudDbOjectTblRow[] possibleRoomsByName = null;
-            _roomsByName.TryGetValue(room.Name, out possibleRoomsByName);
-
-            if (possibleRoomsByName == null) {
-                // no rooms found with the same name.  For now just return
-                // ideally instead might look at what direction was moved to get to this room
-                return;
-            }
-            if (possibleRoomsByName.Length == 1) {
-                _currentRoomId = possibleRoomsByName[0].ObjID.Value;
-                Invalidate();
-                return;
-            }
-
-            ZmudDbOjectTblRow[] possibleRooms = null;
-            if (_roomsByDescription.TryGetValue(room.Description.Replace("\n", "\r\n"), out ZmudDbOjectTblRow[] roomsWithSameDescription)) {
-                possibleRooms = roomsWithSameDescription.Intersect(possibleRoomsByName).ToArray();
-            } else {
-                possibleRooms = new ZmudDbOjectTblRow[0];
-            }
-
-            if (!possibleRooms.Any()) {
-                // the zmud mapper only uses the first line of the description so it's more likely to be correct
-                if (_roomsByFirstLineOfDescription.TryGetValue(room.Description.Split('\n').FirstOrDefault().Trim(), out ZmudDbOjectTblRow[] roomsWithSameFirstLineDescription)) {
-                    possibleRooms = roomsWithSameFirstLineDescription.Intersect(possibleRoomsByName).ToArray();
-                    if (possibleRooms.Any()) {
-                        // todo: currently takes first if there are multiple
-                    }
-                }
-            }
-
-            if (possibleRooms.Length == 0) {
-                return;
-            }
-
-            if (possibleRooms.Length == 1) {
-                _currentRoomId = possibleRooms[0].ObjID.Value;
-                Invalidate();
-                return;
-            }
-
-            // [ obvious exits: N S W D ]
-            var seenExits = new HashSet<string>(room.ExitsLine.Trim().Replace("[ obvious exits:", "").Replace(" ]", "").Split(' ').Where(s => !string.IsNullOrEmpty(s)));
-            // try matching on exits.
-            var possibleRoomsWithExits = new List<ZmudDbOjectTblRow>();
-            foreach (var possibleRoom in possibleRooms) {
-                ZmudDbExitTblRow[] exits = new ZmudDbExitTblRow[0];
-                _exitsByFromRoom.TryGetValue(possibleRoom.ObjID.Value, out exits);
-
-                int seen = 0;
-                int unseen = 0;
-                foreach (var exit in exits) {
-                    if (seenExits.Contains(DirectionToExitString((DirectionTypes)exit.DirType.Value))) {
-                        seen++;
-                    } else if (string.IsNullOrEmpty(exit.Param)) {
-                        // we aren't marking rooms with doors as unseen as some of them can be hidden. It'd be nice to only apply this for doors that can be hidden.
-                        unseen++;
-                    }
-                }
-                if (seen == seenExits.Count && unseen == 0) {
-                    possibleRoomsWithExits.Add(possibleRoom);
-                }
-            }
-
-            if (possibleRoomsWithExits.Any()) {
-                _currentRoomId = possibleRoomsWithExits[0].ObjID.Value;
-                Invalidate();
-                return;
-            }
-        }
-
-        private string DirectionToExitString(DirectionTypes direction) {
-            switch (direction) {
-                case DirectionTypes.Up:
-                    return "U";
-                case DirectionTypes.Down:
-                    return "D";
-                case DirectionTypes.North:
-                    return "N";
-                case DirectionTypes.South:
-                    return "S";
-                case DirectionTypes.East:
-                    return "E";
-                case DirectionTypes.West:
-                    return "W";
-                default:
-                    throw new Exception();
-            }
-        }
-
         private void OnResizeEnd(object sender, EventArgs e) {
             ((Control)sender).Invalidate();
         }
@@ -506,13 +365,6 @@ namespace MudClient {
             ((Control)sender).Invalidate();
         }
 
-        // todo: this probably shouldn't be accessed from here
-        public ZmudDbExitTblRow[] GetCurrentRoomExits() {
-            if (!_exitsByFromRoom.TryGetValue(_currentVirtualRoomId, out var exits)) {
-                return new ZmudDbExitTblRow[0];
-            }
 
-            return exits;
-        }
     }
 }

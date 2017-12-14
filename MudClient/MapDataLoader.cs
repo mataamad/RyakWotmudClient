@@ -29,7 +29,9 @@ namespace MudClient {
 
 
         public void LoadData() {
-            var serializer = new JsonSerializer();
+            LoadFromDb(); // loading from DB because it's a lot faster - use json if it's all you have access to
+
+            /*var serializer = new JsonSerializer();
             using (var file = File.OpenRead(MapFilename))
             using (var gZipStream = new GZipStream(file, CompressionMode.Decompress, leaveOpen: true))
             using (var streamReader = new StreamReader(gZipStream))
@@ -40,7 +42,7 @@ namespace MudClient {
                 Rooms = data.Rooms;
                 Exits = data.Exits;
                 Zones = data.Zones;
-            }
+            }*/
         }
 
         // unused

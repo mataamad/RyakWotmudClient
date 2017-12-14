@@ -14,7 +14,7 @@ namespace MudClient {
         private readonly BufferBlock<string> _sendSpecialMessageBuffer;
         private readonly BufferBlock<string> _clientInfoBuffer;
 
-        private readonly MapWindow _mapWindow;
+        private readonly MapWindow _map;
 
         public DoorsCommands(BufferBlock<List<FormattedOutput>> outputBuffer,
             BufferBlock<string> sendMessageBuffer,
@@ -26,7 +26,7 @@ namespace MudClient {
             _sendMessageBuffer = sendMessageBuffer;
             _sendSpecialMessageBuffer = sendSpecialMessageBuffer;
             _clientInfoBuffer = clientInfoBuffer;
-            _mapWindow = mapWindow;
+            _map = mapWindow;
         }
 
         public void LoopOnNewThread(CancellationToken cancellationToken)
@@ -43,7 +43,7 @@ namespace MudClient {
         }
 
         private async Task LoopSpecialMessage(CancellationToken cancellationToken) {
-            while (!_mapWindow.DataLoaded) {
+            while (!_map.DataLoaded) {
                 await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
             }
 
@@ -88,8 +88,13 @@ namespace MudClient {
                     continue;
                 }
 
+
                 // need a map window command to get all doors, and also to get doors in a direction
-                var currentRoomExits = _mapWindow.GetCurrentRoomExits();
+
+                // todo: this probably shouldn't be accessed from here
+                var currentRoomExits = new ZmudDbExitTblRow[0];
+                _map.ExitsByFromRoom.TryGetValue(_map.CurrentVirtualRoomId, out currentRoomExits);
+
                 var exitsWithDoors = currentRoomExits.Where(exit => !string.IsNullOrEmpty(exit.Param)).ToArray();
 
                 if (exitsWithDoors.Length == 0) {
@@ -98,9 +103,9 @@ namespace MudClient {
                 }
 
 
-                (string commandType, DirectionTypes direction, bool all) = ParseCommand(command);
+                (string commandType, DirectionType direction, bool all) = ParseCommand(command);
 
-                if (direction == DirectionTypes.Other) {
+                if (direction == DirectionType.Other) {
                     if (all) {
                         foreach (var exit in exitsWithDoors) {
                             await _sendMessageBuffer.SendAsync($"{commandType} {exit.Param}");
@@ -125,8 +130,8 @@ namespace MudClient {
             }
         }
 
-        private (string commandType, DirectionTypes direction, bool all) ParseCommand(string command) {
-            DirectionTypes direction = DirectionTypes.Other;
+        private (string commandType, DirectionType direction, bool all) ParseCommand(string command) {
+            DirectionType direction = DirectionType.Other;
             string commandType = "open";
             bool all = false;
 
@@ -156,123 +161,123 @@ namespace MudClient {
                     break;
                 case "on":
                     commandType = "open";
-                    direction = DirectionTypes.North;
+                    direction = DirectionType.North;
                     break;
                 case "oe":
                     commandType = "open";
-                    direction = DirectionTypes.East;
+                    direction = DirectionType.East;
                     break;
                 case "os":
                     commandType = "open";
-                    direction = DirectionTypes.South;
+                    direction = DirectionType.South;
                     break;
                 case "ow":
                     commandType = "open";
-                    direction = DirectionTypes.West;
+                    direction = DirectionType.West;
                     break;
                 case "ou":
                     commandType = "open";
-                    direction = DirectionTypes.Up;
+                    direction = DirectionType.Up;
                     break;
                 case "od":
                     commandType = "open";
-                    direction = DirectionTypes.Down;
+                    direction = DirectionType.Down;
                     break;
                 case "sn":
                     commandType = "close";
-                    direction = DirectionTypes.North;
+                    direction = DirectionType.North;
                     break;
                 case "se":
                     commandType = "close";
-                    direction = DirectionTypes.East;
+                    direction = DirectionType.East;
                     break;
                 case "ss":
                     commandType = "close";
-                    direction = DirectionTypes.South;
+                    direction = DirectionType.South;
                     break;
                 case "sw":
                     commandType = "close";
-                    direction = DirectionTypes.West;
+                    direction = DirectionType.West;
                     break;
                 case "su":
                     commandType = "close";
-                    direction = DirectionTypes.Up;
+                    direction = DirectionType.Up;
                     break;
                 case "sd":
                     commandType = "close";
-                    direction = DirectionTypes.Down;
+                    direction = DirectionType.Down;
                     break;
                 case "locn":
                     commandType = "lock";
-                    direction = DirectionTypes.North;
+                    direction = DirectionType.North;
                     break;
                 case "loce":
                     commandType = "lock";
-                    direction = DirectionTypes.East;
+                    direction = DirectionType.East;
                     break;
                 case "locs":
                     commandType = "lock";
-                    direction = DirectionTypes.South;
+                    direction = DirectionType.South;
                     break;
                 case "locw":
                     commandType = "lock";
-                    direction = DirectionTypes.West;
+                    direction = DirectionType.West;
                     break;
                 case "locu":
                     commandType = "lock";
-                    direction = DirectionTypes.Up;
+                    direction = DirectionType.Up;
                     break;
                 case "locd":
                     commandType = "lock";
-                    direction = DirectionTypes.Down;
+                    direction = DirectionType.Down;
                     break;
                 case "unln":
                     commandType = "unlock";
-                    direction = DirectionTypes.North;
+                    direction = DirectionType.North;
                     break;
                 case "unle":
                     commandType = "unlock";
-                    direction = DirectionTypes.East;
+                    direction = DirectionType.East;
                     break;
                 case "unls":
                     commandType = "unlock";
-                    direction = DirectionTypes.South;
+                    direction = DirectionType.South;
                     break;
                 case "unlw":
                     commandType = "unlock";
-                    direction = DirectionTypes.West;
+                    direction = DirectionType.West;
                     break;
                 case "unlu":
                     commandType = "unlock";
-                    direction = DirectionTypes.Up;
+                    direction = DirectionType.Up;
                     break;
                 case "unld":
                     commandType = "unlock";
-                    direction = DirectionTypes.Down;
+                    direction = DirectionType.Down;
                     break;
                 case "picn":
                     commandType = "pick";
-                    direction = DirectionTypes.North;
+                    direction = DirectionType.North;
                     break;
                 case "pice":
                     commandType = "pick";
-                    direction = DirectionTypes.East;
+                    direction = DirectionType.East;
                     break;
                 case "pics":
                     commandType = "pick";
-                    direction = DirectionTypes.South;
+                    direction = DirectionType.South;
                     break;
                 case "picw":
                     commandType = "pick";
-                    direction = DirectionTypes.West;
+                    direction = DirectionType.West;
                     break;
                 case "picu":
                     commandType = "pick";
-                    direction = DirectionTypes.Up;
+                    direction = DirectionType.Up;
                     break;
                 case "picd":
                     commandType = "pick";
-                    direction = DirectionTypes.Down;
+                    direction = DirectionType.Down;
                     break;
             }
             return (commandType, direction, all);

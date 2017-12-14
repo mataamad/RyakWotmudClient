@@ -13,7 +13,7 @@ namespace MudClient {
         Locked = 2,
     }
 
-    public enum DirectionTypes {
+    public enum DirectionType {
         North = 0,
         NE = 1,
         East = 2,
