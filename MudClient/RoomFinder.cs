@@ -232,7 +232,7 @@ namespace MudClient {
                                 Line = line,
                                 Time = DateTime.Now,
                             });
-                            await ProcessMovementReceived(null, movementFailed: true);
+                            await ProcessMovementReceived(null, couldNotTravel: true);
                         }
                     }
 
@@ -457,7 +457,7 @@ namespace MudClient {
 
         // todo: make qf clear all this stuff
         // process a movement of some kind (e.g saw a new room, or received a message saying a movement failed)
-        private async Task ProcessMovementReceived(Room newRoom, bool movementFailed = false, bool darkMovement = false) {
+        private async Task ProcessMovementReceived(Room newRoom, bool movementFailed = false, bool darkMovement = false, bool couldNotTravel = false) {
             if (VisibleMovement < Movements.Count) {
                 VisibleMovement++;
             }
@@ -466,9 +466,13 @@ namespace MudClient {
             if (VisibleMovement < Movements.Count) {
                 movement = Movements[VisibleMovement];
             }
-
-            if (movementFailed) {
-                // failed - don't need to do anything
+            if (couldNotTravel) {
+                // failed - don't need to do anything to the current room
+            } else if (movementFailed) {
+                // failed - don't need to do anything to the current room
+                // but do reset the spammed to room
+                await _clientInfoBuffer.SendAsync("Map: Move failed, resetting virtual room");
+                _map.CurrentVirtualRoomId = _map.CurrentRoomId;
             } else if (darkMovement) {
                 await MoveCurrentRoom(null, movement);
             } else {
