@@ -409,99 +409,14 @@ namespace MudClient {
         }
 
         public void FindCurrentRoomId(Room room) {
-            // for testing purposes I'm just jumping to the first room with the same room name
-            ZmudDbOjectTblRow[] possibleRoomsByName = null;
-            _map.RoomsByName.TryGetValue(room.Name, out possibleRoomsByName);
 
-            if (possibleRoomsByName == null) {
-                // no rooms found with the same name.  For now just return
-                // ideally instead might look at what direction was moved to get to this room
-                return;
-            }
-            if (possibleRoomsByName.Length == 1) {
-                _map.CurrentRoomId = possibleRoomsByName[0].ObjID.Value;
+            var possibleRooms = PossibleRoomMatcher.FindPossibleRooms(_map, room);
+
+            if (possibleRooms.Any()) {
+                _map.CurrentRoomId = possibleRooms.First().RoomData.ObjID.Value;
                 _map.Invalidate();
-                room.PossibleRoomIds = new List<int> { _map.CurrentRoomId };
-                return;
             }
-
-            ZmudDbOjectTblRow[] possibleRooms = null;
-            if (_map.RoomsByDescription.TryGetValue(room.Description.Replace("\n", "\r\n"), out ZmudDbOjectTblRow[] roomsWithSameDescription)) {
-                possibleRooms = roomsWithSameDescription.Intersect(possibleRoomsByName).ToArray();
-            } else {
-                possibleRooms = new ZmudDbOjectTblRow[0];
-            }
-
-            if (!possibleRooms.Any()) {
-                // the zmud mapper only uses the first line of the description so it's more likely to be correct
-                if (_map.RoomsByFirstLineOfDescription.TryGetValue(room.Description.Split('\n').FirstOrDefault().Trim(), out ZmudDbOjectTblRow[] roomsWithSameFirstLineDescription)) {
-                    possibleRooms = roomsWithSameFirstLineDescription.Intersect(possibleRoomsByName).ToArray();
-                    if (possibleRooms.Any()) {
-                        // todo: currently takes first if there are multiple
-                    }
-                }
-            }
-
-            if (possibleRooms.Length == 0) {
-                return;
-            }
-
-            if (possibleRooms.Length == 1) {
-                _map.CurrentRoomId = possibleRooms[0].ObjID.Value;
-                _map.Invalidate();
-                room.PossibleRoomIds = new List<int> { _map.CurrentRoomId };
-                return;
-            }
-
-            // [ obvious exits: N S W D ]
-            var seenExits = new HashSet<string>(room.ExitsLine.Trim().Replace("[ obvious exits:", "").Replace(" ]", "").Split(' ').Where(s => !string.IsNullOrEmpty(s)));
-            // try matching on exits.
-            var possibleRoomsWithExits = new List<ZmudDbOjectTblRow>();
-            foreach (var possibleRoom in possibleRooms) {
-                ZmudDbExitTblRow[] exits = new ZmudDbExitTblRow[0];
-                _map.ExitsByFromRoom.TryGetValue(possibleRoom.ObjID.Value, out exits);
-
-                int seen = 0;
-                int unseen = 0;
-                foreach (var exit in exits) {
-                    if (seenExits.Contains(DirectionTypeToExitString((DirectionType)exit.DirType.Value))) {
-                        seen++;
-                    } else if (string.IsNullOrEmpty(exit.Param)) {
-                        // we aren't marking rooms with doors as unseen as some of them can be hidden. It'd be nice to only apply this for doors that can be hidden.
-                        unseen++;
-                    }
-                }
-                if (seen == seenExits.Count && unseen == 0) {
-                    possibleRoomsWithExits.Add(possibleRoom);
-                }
-            }
-
-            if (possibleRoomsWithExits.Any()) {
-                _map.CurrentRoomId = possibleRoomsWithExits[0].ObjID.Value;
-                _map.Invalidate();
-
-                room.PossibleRoomIds = possibleRoomsWithExits.Select(r => r.ObjID.Value).ToList();
-                return;
-            }
-        }
-
-        private string DirectionTypeToExitString(DirectionType direction) {
-            switch (direction) {
-                case DirectionType.Up:
-                    return "U";
-                case DirectionType.Down:
-                    return "D";
-                case DirectionType.North:
-                    return "N";
-                case DirectionType.South:
-                    return "S";
-                case DirectionType.East:
-                    return "E";
-                case DirectionType.West:
-                    return "W";
-                default:
-                    throw new Exception();
-            }
+            room.PossibleRoomIds = possibleRooms.Select(r => r.RoomData.ObjID.Value).ToList();
         }
 
         private DirectionType DirectionToDirectionType(string direction) {
