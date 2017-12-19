@@ -13,6 +13,7 @@ namespace MudClient {
         private readonly BufferBlock<List<FormattedOutput>> _outputBuffer;
         private readonly BufferBlock<string> _sentMessageBuffer;
         private readonly BufferBlock<string> _sendSpecialMessageBuffer;
+        private readonly BufferBlock<string> _clientInfoBuffer;
 
         // The string always ends with one of these
         private HashSet<string> _movementFailedStrings = new HashSet<string> {
@@ -45,6 +46,8 @@ namespace MudClient {
         private string _fleeCompleteString = /*^*/ "You flee head over heels.";
 
         private string _cannotGoThatWay = "Alas, you cannot go that way...";
+
+        // todo: flee failed string
 
         public class Room {
             public string Name;
@@ -79,17 +82,26 @@ namespace MudClient {
         public int CurrentRoomIndex = -1;
         public int ProcessedRoomIndex = -1; 
         public List<Movement> Movements = new List<Movement>();
+        public int VisibleMovement = -1;
         public int CurrentMovement = -1;
-        public int ProcessedCurrentMovement = -1; 
+        public int ProcessedCurrentMovement = -1;
 
+
+        private int _foundRoomId = -1;
 
 
         private readonly MapWindow _map;
 
-        public RoomFinder(BufferBlock<List<FormattedOutput>> outputBuffer, BufferBlock<string> sentMessageBuffer, BufferBlock<string> sendSpecialMessageBuffer, MapWindow mapWindow) {
+        public RoomFinder(
+            BufferBlock<List<FormattedOutput>> outputBuffer,
+            BufferBlock<string> sentMessageBuffer,
+            BufferBlock<string> sendSpecialMessageBuffer,
+            BufferBlock<string> clientInfoBuffer,
+            MapWindow mapWindow) {
             _outputBuffer = outputBuffer;
             _sentMessageBuffer = sentMessageBuffer;
             _sendSpecialMessageBuffer = sendSpecialMessageBuffer;
+            _clientInfoBuffer = clientInfoBuffer;
             _map = mapWindow;
 
             _movementFailedRegex = new Regex(string.Join("$|", _movementFailedStrings), RegexOptions.Compiled);
@@ -170,7 +182,8 @@ namespace MudClient {
                         roomName = null;
                         state = RoomSeenState.NotStarted;
                         SeenRooms.Add(room);
-                        FindCurrentRoomId(room);
+                        await FindFoundRoomId(room);
+                        await ProcessMovementReceived(room);
                         FindSmartRoomId();
                     }
                 }
@@ -184,6 +197,8 @@ namespace MudClient {
                                 Line = line,
                                 Time = DateTime.Now,
                             });
+
+                            await ProcessMovementReceived(null, movementFailed: true);
                             FindSmartRoomId();
                         }
                         if (line.StartsWith(_followString)) {
@@ -200,6 +215,7 @@ namespace MudClient {
                                 Line = line,
                                 Time = DateTime.Now,
                             });
+                            await ProcessMovementReceived(null, movementFailed: false, darkMovement: true);
                             FindSmartRoomId();
                         }
                         if (line.StartsWith(_fleeCompleteString)) {
@@ -216,6 +232,7 @@ namespace MudClient {
                                 Line = line,
                                 Time = DateTime.Now,
                             });
+                            await ProcessMovementReceived(null, movementFailed: true);
                         }
                     }
 
@@ -273,6 +290,7 @@ namespace MudClient {
         }
 
         private void QuickFind() {
+            _map.CurrentRoomId = _foundRoomId;
             _map.CurrentVirtualRoomId = _map.CurrentRoomId;
 
             _map.CurrentSmartRoomId = _map.CurrentRoomId;
@@ -282,6 +300,8 @@ namespace MudClient {
             ProcessedRoomIndex = SeenRooms.Count - 1;
             CurrentMovement = Movements.Count - 1;
             ProcessedCurrentMovement = Movements.Count - 1;
+            VisibleMovement = Movements.Count - 1;
+            
 
 
             _map.Invalidate();
@@ -408,16 +428,124 @@ namespace MudClient {
             }
         }
 
-        public void FindCurrentRoomId(Room room) {
-
+        // unused - using ProcessMovementReceived instead
+        private async Task FindFoundRoomId(Room room) {
             var possibleRooms = PossibleRoomMatcher.FindPossibleRooms(_map, room);
+            room.PossibleRoomIds = possibleRooms.Select(r => r.RoomData.ObjID.Value).ToList();
 
             if (possibleRooms.Any()) {
-                _map.CurrentRoomId = possibleRooms.First().RoomData.ObjID.Value;
-                _map.Invalidate();
+                _foundRoomId = possibleRooms.First().RoomData.ObjID.Value;
+
+                if (possibleRooms.Count > 1) {
+                    await _clientInfoBuffer.SendAsync("Map: Multiple matching rooms found.");
+
+                    _map.RoomsById.TryGetValue(_map.CurrentRoomId, out var previousRoom);
+                    if (previousRoom != null) {
+                        // if there are multiple rooms try to pick a match in the same ZoneId
+                        var matchesZone = possibleRooms.Where(r => r.RoomData.ZoneID.Value == previousRoom.ZoneID.Value).ToList();
+
+                        // todo: if there is more than one match then prefer matching rooms close to the previous room
+                        if (matchesZone.Any()) {
+                            _foundRoomId = matchesZone.First().RoomData.ObjID.Value;
+                        }
+                    }
+                }
+            } else {
+                await _clientInfoBuffer.SendAsync("Map: No matching rooms found.");
             }
-            room.PossibleRoomIds = possibleRooms.Select(r => r.RoomData.ObjID.Value).ToList();
         }
+
+        // todo: make qf clear all this stuff
+        // process a movement of some kind (e.g saw a new room, or received a message saying a movement failed)
+        private async Task ProcessMovementReceived(Room newRoom, bool movementFailed = false, bool darkMovement = false) {
+            if (VisibleMovement < Movements.Count) {
+                VisibleMovement++;
+            }
+
+            Movement movement = null;
+            if (VisibleMovement < Movements.Count) {
+                movement = Movements[VisibleMovement];
+            }
+
+            if (movementFailed) {
+                // failed - don't need to do anything
+            } else if (darkMovement) {
+                await MoveCurrentRoom(null, movement);
+            } else {
+                // assume it was a normal movement
+                // could be a move via fleeing, following, or entered direction but we ignore the differences for now
+                await MoveCurrentRoom(newRoom, movement);
+            }
+        }
+
+        private async Task MoveCurrentRoom(Room newRoom, Movement movement) {
+            _map.RoomsById.TryGetValue(_map.CurrentRoomId, out var previousRoom);
+
+            List<PossibleRoom> matchedRooms = new List<PossibleRoom>();
+            if (newRoom != null) {
+                matchedRooms = PossibleRoomMatcher.FindPossibleRooms(_map, newRoom);
+                newRoom.PossibleRoomIds = matchedRooms.Select(r => r.RoomData.ObjID.Value).ToList();
+            }
+
+            if (!matchedRooms.Any()) {
+                await _clientInfoBuffer.SendAsync("Map: No matching rooms found.");
+            }
+            if (matchedRooms.Count > 1) {
+                await _clientInfoBuffer.SendAsync("Map: Multiple matching rooms found.");
+            }
+
+            if (previousRoom != null && movement != null) {
+                _map.ExitsByFromRoom.TryGetValue(_map.CurrentRoomId, out var previousRoomExits);
+
+
+                ZmudDbExitTblRow exit = null;
+                if (previousRoomExits != null) {
+                    exit = previousRoomExits.FirstOrDefault(e => e.DirType.Value == (int)movement.DirectionType);
+                }
+
+                if (exit != null) {
+                    int newRoomId = exit.ToID.Value;
+
+                    if (matchedRooms.Any() && !matchedRooms.Any(mr => mr.RoomData.ObjID.Value == newRoomId)) {
+                        await _clientInfoBuffer.SendAsync("Map: Moved to new room but didn't match an expected found room");
+                    }
+
+                    // currently trust the map find more than the movement direction code
+                    if (matchedRooms.Count == 1) {
+                        _map.CurrentRoomId = matchedRooms[0].RoomData.ObjID.Value;
+                    } else {
+                        _map.CurrentRoomId = newRoomId;
+                    }
+
+                    _map.Invalidate();
+                    return;
+                }
+            }
+
+            // didn't recieve a direction - rely purely on map find
+
+            if (matchedRooms.Any()) {
+                _map.CurrentRoomId = matchedRooms.First().RoomData.ObjID.Value;
+
+                if (matchedRooms.Count > 1) {
+                    await _clientInfoBuffer.SendAsync("Map: Multiple matching rooms found.");
+
+                    if (previousRoom != null) {
+                        // if there are multiple rooms try to pick a match in the same ZoneId
+                        var matchesZone = matchedRooms.Where(r => r.RoomData.ZoneID.Value == previousRoom.ZoneID.Value).ToList();
+
+                        // todo: if there is more than one match then prefer matching rooms close to the previous room
+                        if (matchesZone.Any()) {
+                            _map.CurrentRoomId = matchesZone.First().RoomData.ObjID.Value;
+                        }
+                    }
+                }
+            } else {
+                await _clientInfoBuffer.SendAsync("Map: No matching rooms found.");
+            }
+
+        }
+
 
         private DirectionType DirectionToDirectionType(string direction) {
             switch (direction) {

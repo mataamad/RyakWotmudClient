@@ -50,7 +50,7 @@ namespace MudClient {
 			using (var form = new MudClientForm(cts.Token, connectionClientProducer, sendMessageBuffer, sendSpecialMessageBuffer, clientInfoBuffer)) {
                 var outputWriter = new OutputWriter(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), clientInfoMultiplier.GetBlock(), form);
                 var devOutputWriter = new DevOutputWriter(devTextBuffer, sendMessageMultiplier.GetBlock(), form.DevViewForm);
-                var roomFinder = new RoomFinder(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), sendSpecialMessageMultiplier.GetBlock(), form.MapWindow);
+                var roomFinder = new RoomFinder(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), sendSpecialMessageMultiplier.GetBlock(), clientInfoBuffer, form.MapWindow);
                 var doorsCommands = new DoorsCommands(richTextMultiplier.GetBlock(), sendMessageBuffer, sendSpecialMessageMultiplier.GetBlock(), clientInfoBuffer, form.MapWindow);
                 var miscCommands = new MiscCommands(richTextMultiplier.GetBlock(), sendMessageBuffer, sendSpecialMessageMultiplier.GetBlock(), clientInfoBuffer);
                 var narrsWriter = new NarrsWriter(richTextMultiplier.GetBlock(), form);
