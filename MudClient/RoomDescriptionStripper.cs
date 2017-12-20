@@ -54,7 +54,7 @@ namespace MudClient {
                     }
 
                     // it's a room.  Need to strip the description here
-                    strippedOutput.Text = "\n" + string.Join("\n", splitIntoLines.Skip(exitsLine));
+                    strippedOutput.Text = " " + string.Join("\n", splitIntoLines.Skip(exitsLine));
 
                     roomName = null;
                     state = RoomSeenState.NotStarted;
