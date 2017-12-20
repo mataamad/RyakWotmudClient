@@ -114,7 +114,7 @@ namespace MudClient {
             Task.Run(() => LoopSpecialMessage(cancellationToken));
         }
 
-        private enum RoomSeenState {
+        public enum RoomSeenState {
             NotStarted,
             SeenTitle,
             SeenDescirption,
@@ -463,7 +463,7 @@ namespace MudClient {
             }
 
             Movement movement = null;
-            if (VisibleMovement < Movements.Count) {
+            if (VisibleMovement < Movements.Count && VisibleMovement >= 0) {
                 movement = Movements[VisibleMovement];
             }
             if (couldNotTravel) {
@@ -529,20 +529,33 @@ namespace MudClient {
             // didn't recieve a direction - rely purely on map find
 
             if (matchedRooms.Any()) {
+                var previousRoomId = _map.CurrentRoomId;
                 _map.CurrentRoomId = matchedRooms.First().RoomData.ObjID.Value;
 
                 if (matchedRooms.Count > 1) {
                     await _clientInfoBuffer.SendAsync("Map: Multiple matching rooms found.");
 
                     if (previousRoom != null) {
-                        // if there are multiple rooms try to pick a match in the same ZoneId
+                        var matchedAdjacentRooms = new List<int>();
+                        _map.ExitsByFromRoom.TryGetValue(previousRoom.ObjID.Value, out var previousRoomExits);
+                        if (previousRoomExits != null) {
+                            var adjacentRoomIds = previousRoomExits.Select(previousExit => previousExit.ToID.Value);
+                            matchedAdjacentRooms = matchedRooms.Select(r => r.RoomData.ObjID.Value).Intersect(adjacentRoomIds).ToList();
+                        }
+
                         var matchesZone = matchedRooms.Where(r => r.RoomData.ZoneID.Value == previousRoom.ZoneID.Value).ToList();
 
-                        // todo: if there is more than one match then prefer matching rooms close to the previous room
-                        if (matchesZone.Any()) {
+                        if (matchedAdjacentRooms.Any()) {
+                            _map.CurrentRoomId = matchedAdjacentRooms.First();
+                        } else if (matchesZone.Any()) {
                             _map.CurrentRoomId = matchesZone.First().RoomData.ObjID.Value;
                         }
                     }
+                }
+
+                // didn't recieve a direction so we should make the virtual room following the current room if we can
+                if (previousRoomId == _map.CurrentVirtualRoomId) {
+                    _map.CurrentVirtualRoomId = _map.CurrentRoomId;
                 }
             } else {
                 await _clientInfoBuffer.SendAsync("Map: No matching rooms found.");

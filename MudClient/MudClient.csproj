@@ -73,6 +73,7 @@
     <Compile Include="NarrsWriter.cs" />
     <Compile Include="DoorsCommands.cs" />
     <Compile Include="PossibleRoomMatcher.cs" />
+    <Compile Include="RoomDescriptionStripper.cs" />
     <Compile Include="RoomFinder.cs" />
     <Compile Include="Tests\SmokeTests.cs" />
     <Compile Include="ZmudDbTypes.cs" />

@@ -35,7 +35,10 @@ namespace MudClient {
                     return;
                 }
 
-                _form.WriteToOutput(output);
+                var strippedOutput = RoomDescriptionStripper.StripRoomDescriptions(output);
+                _form.WriteToOutput(strippedOutput);
+
+                // _form.WriteToOutput(output);
             }
         }
 

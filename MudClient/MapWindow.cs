@@ -330,17 +330,22 @@ namespace MudClient {
                 // var fillBrush = Brushes.LightGray;
                 if (room.ObjID.Value == CurrentVirtualRoomId) {
                     e.Graphics.DrawRectangle(Pens.Red, x-2, y-2, roomSize+4, roomSize+4); // draw a red hilight around the current spammed-to room
+                    e.Graphics.DrawRectangle(Pens.Red, x-3, y-3, roomSize+6, roomSize+6); // draw a red hilight around the current spammed-to room
 
-                    if (CurrentVirtualRoomId == CurrentRoomId) {
+                    fillBrush = Brushes.Red;
+                    /*if (CurrentVirtualRoomId == CurrentRoomId) {
                         fillBrush = Brushes.Purple;
                     } else {
                         fillBrush = Brushes.Green;
-                    }
-                } else if (room.ObjID.Value == CurrentRoomId) {
-                    fillBrush = Brushes.IndianRed;
+                    }*/
                 }
+
                 e.Graphics.FillRectangle(fillBrush, x, y, roomSize, roomSize);
                 e.Graphics.DrawRectangle(Pens.Black, x, y, roomSize, roomSize);
+
+                if (room.ObjID.Value == CurrentRoomId) {
+                    e.Graphics.FillRectangle(Brushes.IndianRed, x+3, y+3, roomSize-5, roomSize-5);
+                }
 
                 /*if (room.ObjID.Value == CurrentSmartRoomId) {
                     e.Graphics.FillRectangle(Brushes.HotPink, x+2, y+2, roomSize-4, roomSize-4);
