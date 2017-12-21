@@ -39,6 +39,12 @@ namespace MudClient.Common {
         private const string _aliasesCsvFilename = "./aliases.csv";
         private int _lastLine = 0;
 
+        public Aliases() {
+            if (Program.EnableStabAliases) {
+                SpecialAliasesDictionary.Add("b");
+            }
+        }
+
         public void LoadAliases() {
             if (Dictionary != null) {
                 throw new Exception("Cannot load aliases if some are already loaded");

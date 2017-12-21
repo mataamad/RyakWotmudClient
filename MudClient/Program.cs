@@ -7,6 +7,9 @@ using System.Threading.Tasks.Dataflow;
 namespace MudClient {
     public class Program {
 
+        // public const bool EnableStabAliases = true;
+        public const bool EnableStabAliases = false;
+
         public const bool ReadFromLogFile = true;
         // public const bool ReadFromLogFile = false;
         // public const string LogFilename = "./test_bash.csv";

@@ -55,6 +55,13 @@ namespace MudClient {
                 string restOfMessage = string.Join(" ", splitOutput.Skip(1));
                 // todo: parse the message
 
+                if (string.IsNullOrWhiteSpace(_target1)) {
+                    _target1 = _enemyRace;
+                }
+                if (string.IsNullOrWhiteSpace(_target2)) {
+                    _target2 = _enemyRace;
+                }
+
                 switch (command) {
                     case "sr":
                         _enemyRace = restOfMessage;
@@ -87,7 +94,11 @@ namespace MudClient {
                         await _sendMessageBuffer.SendAsync($"kill {_target1}");
                         break;
                     case "i":
-                        await _sendMessageBuffer.SendAsync($"bash h.{_target1}");
+                        if (!Program.EnableStabAliases) {
+                            await _sendMessageBuffer.SendAsync($"bash h.{_target1}");
+                        } else {
+                            await _sendMessageBuffer.SendAsync($"backstab h.{_target1}");
+                        }
                         break;
                     case "tm":
                         _target2 = restOfMessage;
@@ -98,6 +109,16 @@ namespace MudClient {
                         break;
                     case "sc":
                         await _sendMessageBuffer.SendAsync($"scan {restOfMessage}");
+                        break;
+                    case "b":
+                        if (!Program.EnableStabAliases) {
+                            throw new InvalidOperationException();
+                        }
+                        if (!string.IsNullOrEmpty(restOfMessage)) {
+                            await _sendMessageBuffer.SendAsync($"backstab {restOfMessage}");
+                        } else {
+                            await _sendMessageBuffer.SendAsync($"backstab h.{_enemyRace}");
+                        }
                         break;
                 }
             }

@@ -81,10 +81,12 @@ namespace MudClient.Management {
             }
 
             if (e.Control && e.KeyCode == Keys.C) {
-                Clipboard.SetText(richTextBox.SelectedText);
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
+                if (richTextBox.SelectedText != null) {
+                    Clipboard.SetText(richTextBox.SelectedText);
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    return;
+                }
             }
 
             var hotKey = _hotKeyCollection[e.KeyData];
@@ -104,7 +106,10 @@ namespace MudClient.Management {
 			var inputLines = (input ?? string.Empty).Split(new[] { Options.CommandDelimiter }, StringSplitOptions.None);
             bool firstLine = true;
 			foreach (var inputLine in inputLines) {
-				var inputStringSplit = inputLine.Split(' ');
+				var inputStringSplit = inputLine.Split(' ').Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+                if (inputStringSplit.Length == 0) {
+                    inputStringSplit = new[] { "" };
+                }
                 var firstWordToUpper = inputStringSplit[0].ToUpper();
                 switch (firstWordToUpper) {
 					case COMMAND_CONNECT:
@@ -124,10 +129,10 @@ namespace MudClient.Management {
                             await ProcessAliasCommand(input);
                             textBox.SelectAll();
                             return;
-                        } else if (_aliases.Dictionary.TryGetValue(inputLine, out var alias)) {
+                        } else if (_aliases.SpecialAliasesDictionary.Contains(inputStringSplit[0].Trim())) {
+                            await _sendSpecialMessageBuffer.SendAsync(inputLine.Trim());
+                        } else if (_aliases.Dictionary.TryGetValue(inputLine.Trim(), out var alias)) {
                             await HandleInput(alias.MapsTo);
-                        } else if (_aliases.SpecialAliasesDictionary.Contains(inputStringSplit[0])) {
-                            await _sendSpecialMessageBuffer.SendAsync(inputLine);
                         } else {
                             await _sendMessageBuffer.SendAsync(inputLine);
                         }
