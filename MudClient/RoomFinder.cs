@@ -93,8 +93,8 @@ namespace MudClient {
                 ProcessSentMessage(message);
             });
 
-            Store.FormattedTextWithoutStatusLine.SubscribeAsync(async (richText) => {
-                await ProcessRichText(richText);
+            Store.ParsedOutput.SubscribeAsync(async (parsedOutputs) => {
+                await ProcessParsedOutput(parsedOutputs);
             });
 
             Store.ComplexAlias.Subscribe((output) => {
@@ -124,77 +124,32 @@ namespace MudClient {
             }
         }
 
-        public enum RoomSeenState {
-            NotStarted,
-            SeenTitle,
-            SeenDescirption,
-            SeenExits
-        }
-
-        private async Task ProcessRichText(List<FormattedOutput> outputs) {
+        private async Task ProcessParsedOutput(List<ParsedOutput> outputs) {
             if (!MapData.DataLoaded) {
                 return;
             }
 
-            RoomSeenState state = RoomSeenState.NotStarted;
-            string roomName = null;
             foreach (var output in outputs) {
-                if (state == RoomSeenState.NotStarted) {
-                    string text = output.Text;
-                    if (output.TextColor == MudColors.Dictionary[MudColors.ANSI_CYAN]) {
-                        if (text.Contains("speaks from the") || text.Contains("answers your prayer")) {
-                            continue;
-                        }
-                        roomName = text;
-                        state = RoomSeenState.SeenTitle;
-
-                        // todo: check for newlines - should only be either at the start or end
-                    }
-                } else if (state == RoomSeenState.SeenTitle) {
-                    if (output.TextColor != MudColors.ForegroundColor) {
-                        roomName = null;
-                        state = RoomSeenState.NotStarted;
-                        continue;
-                    }
-                    string[] splitIntoLines = output.Text.Split('\n');
-                    int exitsLine = -1;
-                    for (int i = 0; i < splitIntoLines.Length; i++) {
-                        if (splitIntoLines[i].StartsWith("[ obvious exits: ")) {
-                            exitsLine = i;
-                            break;
-                        }
-                    }
-                    if (exitsLine == -1) {
-                        roomName = null;
-                        state = RoomSeenState.NotStarted;
-                        continue;
-                    }
-                    int skipLines = 0;
-                    if (string.IsNullOrEmpty(splitIntoLines.First())) {
-                        skipLines = 1;
-                    }
-
-                    // todo: there are probably some other checks I can add here to ignore descriptions that are known bad
-                    // but for now I guess just include everything
-
-                    var room = new Room {
-                        Name = roomName,
-                        Description = string.Join("\n", splitIntoLines.Skip(skipLines).Take(exitsLine - skipLines)) + "\n",
-                        ExitsLine = splitIntoLines[exitsLine],
-                        Time = DateTime.Now,
-                    };
-                    roomName = null;
-                    state = RoomSeenState.NotStarted;
-                    SeenRooms.Add(room);
-                    await FindFoundRoomId(room);
-                    await ProcessMovementReceived(room);
-                    FindSmartRoomId();
+                if (output.Type != ParsedOutputType.Room) {
+                    continue;
                 }
+                var room = new Room {
+                    Name = output.Title,
+                    Description = string.Join("\n", output.Description) + "\n",
+                    ExitsLine = output.Exits,
+                    Time = DateTime.Now,
+                };
+                SeenRooms.Add(room);
+                await FindFoundRoomId(room);
+                await ProcessMovementReceived(room);
+                FindSmartRoomId();
             }
 
             foreach (var output in outputs) {
-                var splitIntoLines = output.Text.Split('\n');
-                foreach (var line in splitIntoLines) {
+                if (output.Type != ParsedOutputType.Raw) {
+                    continue;
+                }
+                foreach (var line in output.Lines) {
                     if (_movementFailedRegex.IsMatch(line)) {
                         OtherMovements.Add(new OtherMovement {
                             MovementFailed = true,
@@ -239,9 +194,7 @@ namespace MudClient {
                         await ProcessMovementReceived(null, couldNotTravel: true);
                     }
                 }
-
             }
-
         }
 
         private void QuickFind() {

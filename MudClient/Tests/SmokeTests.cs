@@ -43,7 +43,7 @@ namespace MudClient.Tests {
             var csvLogFileProducer = new CsvLogFileProducer();
             csvLogFileProducer.LoopOnNewThread(logFilename, cts.Token, TimeSpan.Zero, logParsedCallback);
 
-            var rawInputToRichTextConverter = new RawInputToRichTextConverter();
+            // var rawInputToRichTextConverter = new RawInputToRichTextConverter();
 
             // todo: not sure how to tell if all output has been processed... Currently I think it's impossible to be sure.
 

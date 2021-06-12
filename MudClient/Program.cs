@@ -55,19 +55,16 @@ namespace MudClient {
             }
 
             var connectionClientProducer = new ConnectionClientProducer();
-            var rawInputToRichTextConverter = new RawInputToRichTextConverter();
             var rawInputToDevTextConverter = new RawInputToDevTextConverter();
-            var statusBarStripper = new StatusBarStripper(); // todo: can't remove yet because I'm using it for the mud map
             var parsedOutputConverter = new ParsedOutputConverter();
             var csvWriter = new CsvLogFileWriter();
 
             using (var form = new MudClientForm(cts.Token, connectionClientProducer)) {
                 var parsedOutputWriter = new ParsedOutputWriter(form);
-                // var outputWriter = new OutputWriter(form);
+                var statusWriter = new StatusWriter(form.StatusForm);
                 var devOutputWriter = new DevOutputWriter(form.DevViewForm);
                 var roomFinder = new RoomFinder(form.MapWindow);
                 var doorsCommands = new DoorsCommands(form.MapWindow);
-                // var statusWriter = new StatusWriter(form.StatusForm);
                 var miscCommands = new MiscCommands();
                 var narrsWriter = new NarrsWriter(form);
 

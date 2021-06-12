@@ -216,6 +216,10 @@ namespace MudClient.Management {
         }
 
         public void WriteToOutput(List<FormattedOutput> outputs) {
+            WriteToTextBox(richTextBox, outputs);
+        }
+
+        public void WriteToTextBox(RichTextBox target, List<FormattedOutput> outputs) {
             if (!_isShown) {
                 return;
             }
@@ -224,7 +228,7 @@ namespace MudClient.Management {
                 return;
             }
 
-            Action AppendText = () => {
+            Action WriteText = () => {
                 foreach (var output in outputs) {
                     // Debug.Write(output.Text);
                     // richTextBox.AppendFormattedText("X" + output.Text, output.TextColor);
@@ -236,31 +240,24 @@ namespace MudClient.Management {
 
                     if (output.ReplaceCurrentLine) {
                         // richTextBox.ClearCurrentLine();
-                        richTextBox.ReplaceCurrentLine(output.Text, output.TextColor);
+                        target.ReplaceCurrentLine(output.Text, output.TextColor);
                         // richTextBox.AppendFormattedText("X" + output.Text + "Y", output.TextColor);
                     } else {
-                        richTextBox.AppendFormattedText(output.Text, output.TextColor);
+                        target.AppendFormattedText(output.Text, output.TextColor);
                     }
                 }
             };
 
-			if (this.richTextBox.InvokeRequired) {
-				this.richTextBox.Invoke(AppendText);
-			} else {
-				AppendText();
-			}
+            if (target.InvokeRequired) {
+                target.Invoke(WriteText);
+            } else {
+                WriteText();
+            }
         }
 
-        public void WriteToNarrs(string message, Color textColor) {
-            Action AppendText = () => {
-                narrsRichTextBox.AppendFormattedText(message, textColor);
-            };
 
-            if (narrsRichTextBox.InvokeRequired) {
-                narrsRichTextBox.Invoke(AppendText);
-            } else {
-                AppendText();
-            }
+        public void WriteToNarrs(List<FormattedOutput> outputs) {
+            WriteToTextBox(narrsRichTextBox,outputs);
         }
 
 		private void connectionClient_Connected(object sender) {

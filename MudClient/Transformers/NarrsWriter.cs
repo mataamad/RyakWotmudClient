@@ -8,9 +8,12 @@ namespace MudClient {
         public NarrsWriter(MudClientForm form) {
             _form = form;
 
-            Store.FormattedTextWithoutStatusLine.Subscribe((outputs) => {
+            Store.ParsedOutput.Subscribe((outputs) => {
                 foreach (var output in outputs) {
-                    foreach (var line in output.Text.Split('\n')) {
+                    if (output.Type != ParsedOutputType.Raw) {
+                        continue;
+                    }
+                    foreach (var line in output.Lines) {
                         // todo: also include my narrates in here
                         // todo: should match on colour and also with a regex instead of doing this
                         if (line.Contains(" narrates '")
@@ -27,19 +30,13 @@ namespace MudClient {
                                 SystemSounds.Beep.Play();
                             }
 
-                            _form.WriteToNarrs(line + "\n", output.TextColor);
+
+                            // todo: decoding & then converting to rich text will be needlessly wasteful
+                            _form.WriteToNarrs(FormatEncodedText.Format(ControlCharacterEncoder.Decode(line + "\n")));
                         }
                     }
                 }
             });
-        }
-
-
-        private enum RoomSeenState {
-            NotStarted,
-            SeenTitle,
-            SeenDescirption,
-            SeenExits
         }
     }
 }

@@ -32,11 +32,6 @@ namespace MudClient {
     }
 
     public static class Store {
-        // todo: little worried about the null cloning function, do I need one?
-        public static SubscribableBuffer<List<FormattedOutput>> FormattedText = new();
-
-        public static SubscribableBuffer<List<FormattedOutput>> FormattedTextWithoutStatusLine = new();
-
         public static SubscribableBuffer<string> DevText = new();
 
         public static SubscribableBuffer<string> TcpReceive = new();
@@ -52,8 +47,6 @@ namespace MudClient {
         /// Information to show to the user but not send to the mud - e.g. "Map: Multiple matching rooms found."
         /// </summary>
         public static SubscribableBuffer<string> ClientInfo = new();
-
-        public static SubscribableBuffer<string> StatusLine = new();
 
         public static SubscribableBuffer<List<ParsedOutput>> ParsedOutput = new();
     }

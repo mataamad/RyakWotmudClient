@@ -4,17 +4,12 @@ using System.Linq;
 using System.Text;
 
 namespace MudClient {
-    public class RawInputToRichTextConverter {
+    public static class FormatEncodedText {
 
-        public RawInputToRichTextConverter() {
-            Store.TcpReceive.SubscribeAsync(async (message) => {
-                await Store.FormattedText.SendAsync(FormatOutput(message));
-            });
-        }
 
         // colours text based on the ansi escape sequences
         // minimises the number of elements in the returned List to make display faster
-        public static List<FormattedOutput> FormatOutput(string s) {
+        public static List<FormattedOutput> Format(string s) {
             var output = new List<FormattedOutput>();
 
             const char ESCAPE_CHAR = (char)0x1B;

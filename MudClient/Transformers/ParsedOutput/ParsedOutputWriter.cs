@@ -29,7 +29,7 @@ namespace MudClient {
                         case ParsedOutputType.Raw:
                             // todo: dont unsplit things, dont decode things ~ waste of time & effort
                             // probably copy paste a custom version of .FormatOutput
-                            var formattedOutput = RawInputToRichTextConverter.FormatOutput(ControlCharacterEncoder.Decode(string.Join("\n", p.Lines) + "\n"));
+                            var formattedOutput = FormatEncodedText.Format(ControlCharacterEncoder.Decode(string.Join("\n", p.Lines) + "\n"));
                             form.WriteToOutput(formattedOutput);
 
                             break;
