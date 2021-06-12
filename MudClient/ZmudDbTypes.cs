@@ -24,6 +24,8 @@ namespace MudClient {
         NW = 7,
         Up = 8,
         Down = 9,
+        Center = 10,
+        None = 11, // not 100% sure about this but it seems like labels with this value shouldn't be drawn
         Other = 999,
     }
 
@@ -71,7 +73,7 @@ namespace MudClient {
         public int? ToID { get; set; }
         public int? ExitKindID { get; set; }
         public string Name { get; set; }
-        public string Param { get; set; }
+        public string Param { get; set; } // Door name (I think) or maybe just whether it has a door
         public string Label { get; set; }
         public int? X0 { get; set; }
         public int? Y0 { get; set; }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MudClient.Common {
+namespace MudClient {
     public class Aliases {
         public Dictionary<string, AliasRow> Dictionary { get; private set; } = null;
 

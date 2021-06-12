@@ -3,4 +3,15 @@
   <PropertyGroup>
     <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="Forms\DevViewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\MapWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\MudClientForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>

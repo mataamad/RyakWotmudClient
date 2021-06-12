@@ -24,6 +24,8 @@ namespace MudClient.Tests {
             int i = 0;
         }
 
+        // todo: fix these tests after the new Store
+
 
         private async Task<List<FormattedOutput>> RunTest(string logFilename) {
             BufferBlock<string> tcpReceiveBuffer = new BufferBlock<string>();
@@ -38,11 +40,10 @@ namespace MudClient.Tests {
                 logFileParsed = true;
             };
 
-            var csvLogFileProducer = new CsvLogFileProducer(tcpReceiveBuffer, sendMessageBuffer, clientInfoBuffer);
+            var csvLogFileProducer = new CsvLogFileProducer();
             csvLogFileProducer.LoopOnNewThread(logFilename, cts.Token, TimeSpan.Zero, logParsedCallback);
 
-            var rawInputToRichTextConverter = new RawInputToRichTextConverter(tcpReceiveBuffer, richTextBuffer);
-            rawInputToRichTextConverter.LoopOnNewThread(cts.Token);
+            var rawInputToRichTextConverter = new RawInputToRichTextConverter();
 
             // todo: not sure how to tell if all output has been processed... Currently I think it's impossible to be sure.
 

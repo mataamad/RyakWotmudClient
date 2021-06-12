@@ -13,10 +13,10 @@ namespace MudClient {
         // If no rooms are returned, then no match was found
         // If one room is returned then it is likely to be the correct room
         // If multiple rooms are returned then it could be any of these rooms and other methods should be used to determine the exact room (e.g. pick the only one adjacent to the last room)
-        public static List<PossibleRoom> FindPossibleRooms(MapWindow map, Room room) {
+        public static List<PossibleRoom> FindPossibleRooms(Room room) {
             // for testing purposes I'm just jumping to the first room with the same room name
             ZmudDbOjectTblRow[] possibleRoomsByName = null;
-            map.RoomsByName.TryGetValue(room.Name, out possibleRoomsByName);
+            MapData.RoomsByName.TryGetValue(room.Name, out possibleRoomsByName);
 
             if (possibleRoomsByName == null) {
                 // no rooms found with the same name.  For now just return.  Could do fuzzy matching of some kind.
@@ -29,7 +29,7 @@ namespace MudClient {
             ZmudDbOjectTblRow[] possibleRooms = null;
 
         
-            if (map.RoomsByDescription.TryGetValue(room.Description.Replace("\n", "\r\n"), out ZmudDbOjectTblRow[] roomsWithSameDescription)) {
+            if (MapData.RoomsByDescription.TryGetValue(room.Description.Replace("\n", "\r\n"), out ZmudDbOjectTblRow[] roomsWithSameDescription)) {
                 possibleRooms = roomsWithSameDescription.Intersect(possibleRoomsByName).ToArray();
             } else {
                 possibleRooms = new ZmudDbOjectTblRow[0];
@@ -37,7 +37,7 @@ namespace MudClient {
 
             if (!possibleRooms.Any()) {
                 // the zmud mapper only uses the first line of the description so it's more likely to be correct
-                if (map.RoomsByFirstLineOfDescription.TryGetValue(room.Description.Split('\n').FirstOrDefault().Trim(), out ZmudDbOjectTblRow[] roomsWithSameFirstLineDescription)) {
+                if (MapData.RoomsByFirstLineOfDescription.TryGetValue(room.Description.Split('\n').FirstOrDefault().Trim(), out ZmudDbOjectTblRow[] roomsWithSameFirstLineDescription)) {
                     possibleRooms = roomsWithSameFirstLineDescription.Intersect(possibleRoomsByName).ToArray();
                 }
             }
@@ -57,7 +57,7 @@ namespace MudClient {
             var possibleRoomsWithExits = new List<ZmudDbOjectTblRow>();
             foreach (var possibleRoom in possibleRooms) {
                 ZmudDbExitTblRow[] exits = new ZmudDbExitTblRow[0];
-                map.ExitsByFromRoom.TryGetValue(possibleRoom.ObjID.Value, out exits);
+                MapData.ExitsByFromRoom.TryGetValue(possibleRoom.ObjID.Value, out exits);
 
                 int seen = 0;
                 int unseen = 0;
@@ -69,6 +69,7 @@ namespace MudClient {
                         unseen++;
                     }
                 }
+                // todo: this doesn't take into account possibly unseen doors
                 if (seen == seenExits.Count && unseen == 0) {
                     possibleRoomsWithExits.Add(possibleRoom);
                 }

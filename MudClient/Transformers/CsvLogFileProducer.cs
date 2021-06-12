@@ -1,30 +1,24 @@
-﻿using MudClient.Common.Extensions;
-using MudClient.Core.Common;
-using System;
+﻿using System;
 using System.IO;
-using System.Net.Sockets;
-using System.Text;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using static MudClient.CsvLogFileWriter;
 
 namespace MudClient {
     public class CsvLogFileProducer {
-        private readonly BufferBlock<string> _receiveBuffer;
-        private readonly BufferBlock<string> _sendBuffer;
-        private readonly BufferBlock<string> _clientInfoBuffer;
-
         // todo: allow choosing between constant time between messages & replaying back at a % of orignal input speed
         // todo: allow configuring time between messages
-        public CsvLogFileProducer(BufferBlock<string> receiveBuffer, BufferBlock<string> sendBuffer, BufferBlock<string> clientInfoBuffer) {
-            _receiveBuffer = receiveBuffer;
-            _sendBuffer = sendBuffer;
-            _clientInfoBuffer = clientInfoBuffer;
+        public CsvLogFileProducer() {
         }
 
+        private readonly TimeSpan _initialDelay = TimeSpan.FromSeconds(0.5);
+
+        // private readonly TimeSpan _delay = TimeSpan.FromSeconds(0.25);
+        private readonly TimeSpan _delay = TimeSpan.FromSeconds(0.00);
+
         public void LoopOnNewThread(string filename, CancellationToken cancellationToken, Action onLogParsed = null) {
-            LoopOnNewThread(filename, cancellationToken, TimeSpan.FromSeconds(0.25), onLogParsed);
+            LoopOnNewThread(filename, cancellationToken, _delay, onLogParsed);
         }
 
         public void LoopOnNewThread(string filename, CancellationToken cancellationToken, TimeSpan timeBetweenMessages, Action onLogParsed = null) {
@@ -33,6 +27,8 @@ namespace MudClient {
 
         private async Task ProcessLogLoop(string filename, TimeSpan timeBetweenMessages,  Action onLogParsed, CancellationToken cancellationToken) {
             var lines = File.ReadAllLines(filename);
+
+            await Task.Delay(_initialDelay); // todo: dirty hack because the windows need to be load before the log starts flying
 
             foreach (var line in lines) {
                 if (cancellationToken.IsCancellationRequested) {
@@ -54,11 +50,11 @@ namespace MudClient {
                 string decodedText = ControlCharacterEncoder.Decode(logLine.EncodedText);
 
                 if (logLine.MessageType == LOG_TYPE_MUD_INPUT) {
-                    await _sendBuffer.SendAsync(decodedText);
+                    await Store.TcpSend.SendAsync(decodedText);
                 } else if (logLine.MessageType == LOG_TYPE_MUD_OUTPUT) {
-                    await _receiveBuffer.SendAsync(decodedText);
+                    await Store.TcpReceive.SendAsync(decodedText);
                 } else if (logLine.MessageType == LOG_TYPE_CLIENT_INFO) {
-                    await _clientInfoBuffer.SendAsync(decodedText);
+                    await Store.ClientInfo.SendAsync(decodedText);
                 } else {
                     throw new Exception("unknown log message type");
                 }

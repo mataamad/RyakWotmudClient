@@ -1,76 +1,80 @@
 ﻿using MudClient.Management;
 using System;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks.Dataflow;
+
+/*
+
+    todos:
+    group this list into easy, medium hard
+
+    ctrl+f through log history; at least ctrl+a ctrl+c tocopy it to notepad and do it there
+    ctrl+f for map room (or an alias)
+    view room details
+    press up to scroll through previous commands
+
+    clean up RoomParser.cs
+
+    switch to ParsedOutput for map
+
+    cant see dlines in formatted output anymore
+
+    highlight windows taskbar when something happens
+    tidy up map scripts
+    make a view of the world where the console doesn't scroll & battle spam is removed
+    map dark mode?
+    overspam counter? show in status how far overspammed I am
+    add manual map move commands  - e.g. mv s
+    colour things progressively as they get better/worse -e.g. mvs or some shit
+    make track directions stand out & player leave directions
+*/
 
 namespace MudClient {
     public class Program {
 
-        // public const bool EnableStabAliases = true;
         public const bool EnableStabAliases = false;
+        // public const bool EnableStabAliases = false;
 
-        public const bool ReadFromLogFile = true;
+        public const bool ReadFromLogFile = false;
         // public const bool ReadFromLogFile = false;
-        // public const string LogFilename = "./test_bash.csv";
         // public const string LogFilename = "./test_only_bash.csv";
         // public const string LogFilename = "./Log_2017-11-27 17-34-35.csv";
-        public const string LogFilename = "one_room.csv";
+        // public const string LogFilename = "one_room.csv";
+        // public const string LogFilename = "ASushiAppears.csv";
+        public const string LogFilename = "incorrectColorReset.csv";
         // public const string LogFilename = "LdLog.csv";
 
         [STAThread]
-		public static void Main(string[] args) {
-            BufferBlock<string> tcpReceiveBuffer = new BufferBlock<string>();
-            BufferBlock<List<FormattedOutput>> richTextBuffer = new BufferBlock<List<FormattedOutput>>();
-            BufferBlock<string> devTextBuffer = new BufferBlock<string>();
-
-            BufferBlock<string> sendMessageBuffer = new BufferBlock<string>();
-            BufferBlock<string> sendSpecialMessageBuffer = new BufferBlock<string>();
-            BufferBlock<string> clientInfoBuffer = new BufferBlock<string>();
-            var tcpReceiveMultiplier = new BufferBlockMultiplier<string>(tcpReceiveBuffer);
-            var sendMessageMultiplier = new BufferBlockMultiplier<string>(sendMessageBuffer);
-            var sendSpecialMessageMultiplier = new BufferBlockMultiplier<string>(sendSpecialMessageBuffer);
-            var clientInfoMultiplier = new BufferBlockMultiplier<string>(clientInfoBuffer);
-            var richTextMultiplier = new BufferBlockMultiplier<List<FormattedOutput>>(richTextBuffer);
+        public static void Main(string[] args) {
+            // LogMiner.MineStatusLogs(); return;
 
             var cts = new CancellationTokenSource();
 
-            var csvLogFileProducer = new CsvLogFileProducer(tcpReceiveBuffer, sendMessageBuffer, clientInfoBuffer);
+            var csvLogFileProducer = new CsvLogFileProducer();
             if (ReadFromLogFile) {
                 csvLogFileProducer.LoopOnNewThread(LogFilename, cts.Token);
             }
 
+            var connectionClientProducer = new ConnectionClientProducer();
+            var rawInputToRichTextConverter = new RawInputToRichTextConverter();
+            var rawInputToDevTextConverter = new RawInputToDevTextConverter();
+            var statusBarStripper = new StatusBarStripper(); // todo: can't remove yet because I'm using it for the mud map
+            var parsedOutputConverter = new ParsedOutputConverter();
+            var csvWriter = new CsvLogFileWriter();
 
-            var connectionClientProducer = new ConnectionClientProducer(tcpReceiveBuffer, sendMessageMultiplier.GetBlock());
-            var rawInputToRichTextConverter = new RawInputToRichTextConverter(tcpReceiveMultiplier.GetBlock(), richTextBuffer);
-            var rawInputToDevTextConverter = new RawInputToDevTextConverter(tcpReceiveMultiplier.GetBlock(), devTextBuffer);
-            var csvWriter = new CsvLogFileWriter(tcpReceiveMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), clientInfoMultiplier.GetBlock());
-            rawInputToRichTextConverter.LoopOnNewThread(cts.Token);
-            rawInputToDevTextConverter.LoopOnNewThread(cts.Token);
-            tcpReceiveMultiplier.LoopOnNewThread(cts.Token);
-            csvWriter.LoopOnNewThread(cts.Token);
-
-			using (var form = new MudClientForm(cts.Token, connectionClientProducer, sendMessageBuffer, sendSpecialMessageBuffer, clientInfoBuffer)) {
-                var outputWriter = new OutputWriter(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), clientInfoMultiplier.GetBlock(), form);
-                var devOutputWriter = new DevOutputWriter(devTextBuffer, sendMessageMultiplier.GetBlock(), form.DevViewForm);
-                var roomFinder = new RoomFinder(richTextMultiplier.GetBlock(), sendMessageMultiplier.GetBlock(), sendSpecialMessageMultiplier.GetBlock(), clientInfoBuffer, form.MapWindow);
-                var doorsCommands = new DoorsCommands(richTextMultiplier.GetBlock(), sendMessageBuffer, sendSpecialMessageMultiplier.GetBlock(), clientInfoBuffer, form.MapWindow);
-                var miscCommands = new MiscCommands(richTextMultiplier.GetBlock(), sendMessageBuffer, sendSpecialMessageMultiplier.GetBlock(), clientInfoBuffer);
-                var narrsWriter = new NarrsWriter(richTextMultiplier.GetBlock(), form);
-                outputWriter.LoopOnNewThread(cts.Token);
-                devOutputWriter.LoopOnNewThread(cts.Token);
-                sendMessageMultiplier.LoopOnNewThread(cts.Token);
-                clientInfoMultiplier.LoopOnNewThread(cts.Token);
-                sendSpecialMessageMultiplier.LoopOnNewThread(cts.Token);
-                richTextMultiplier.LoopOnNewThread(cts.Token);
-                roomFinder.LoopOnNewThread(cts.Token);
-                narrsWriter.LoopOnNewThread(cts.Token);
-                doorsCommands.LoopOnNewThread(cts.Token);
-                miscCommands.LoopOnNewThread(cts.Token);
+            using (var form = new MudClientForm(cts.Token, connectionClientProducer)) {
+                var parsedOutputWriter = new ParsedOutputWriter(form);
+                // var outputWriter = new OutputWriter(form);
+                var devOutputWriter = new DevOutputWriter(form.DevViewForm);
+                var roomFinder = new RoomFinder(form.MapWindow);
+                var doorsCommands = new DoorsCommands(form.MapWindow);
+                // var statusWriter = new StatusWriter(form.StatusForm);
+                var miscCommands = new MiscCommands();
+                var narrsWriter = new NarrsWriter(form);
 
                 form.ShowDialog();
-			}
+            }
             cts.Cancel();
-		}
-	}
+            csvWriter.CloseFile();
+        }
+    }
 }

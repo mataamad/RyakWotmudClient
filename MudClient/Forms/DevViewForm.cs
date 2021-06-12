@@ -9,6 +9,8 @@ namespace MudClient.Management
 {
     public partial class DevViewForm : Form {
 		
+		private bool _shown = false;
+		
 		public DevViewForm() {
 			InitializeComponent();
 		}
@@ -19,16 +21,26 @@ namespace MudClient.Management
             richTextBox.ForeColor = MudColors.ForegroundColor;
             richTextBox.Font = Options.Font;
         }
+		
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+			_shown = true;
+		}
 
 		public void WriteToOutput(string message, Color textColor) {
-            Action<string> AppendText = (messageToWrite) => {
+			if (!_shown) {
+				return;
+			}
+
+            Action AppendText = () => {
                 richTextBox.AppendFormattedText(message, textColor);
             };
 
 			if (richTextBox.InvokeRequired) {
-				richTextBox.Invoke(AppendText, message);
+				richTextBox.Invoke(AppendText);
 			} else {
-				AppendText(message);
+				AppendText();
 			}
         }
     }

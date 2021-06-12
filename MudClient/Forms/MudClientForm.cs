@@ -10,7 +10,6 @@ using System.Linq;
 using System.Media;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using System.Windows.Forms;
 
 namespace MudClient.Management {
@@ -19,39 +18,31 @@ namespace MudClient.Management {
 		private const string COMMAND_ACTION = @"#ACTION";
 		private const string COMMAND_ALIAS = @"#ALIAS";
 		private const string COMMAND_CONNECT = @"#CONNECT";
-		private const string COMMAND_HOTKEY = @"#HOTKEY";
 		private const string COMMAND_QUIT = @"#QUIT";
 		private const string COMMAND_QUICK_CONNECT = @"#QC";
 		
-        private readonly HotKeyCollection _hotKeyCollection = new HotKeyCollection();
-
         private readonly ConnectionClientProducer _connectionClientProducer;
 
         private readonly CancellationToken _cancellationToken;
-        private readonly BufferBlock<string> _sendMessageBuffer;
-        private readonly BufferBlock<string> _sendSpecialMessageBuffer;
-        private readonly BufferBlock<string> _clientInfoBuffer;
 
         private readonly Aliases _aliases = new Aliases();
 
+        private bool _isShown = false;
+
         public DevViewForm DevViewForm { get; private set; }
+        public StatusForm StatusForm { get; private set; }
         public MapWindow MapWindow { get; private set; }
 
 		public MudClientForm(
             CancellationToken cancellationToken,
-            ConnectionClientProducer connectionClientProducer,
-            BufferBlock<string> sendMessageBuffer,
-            BufferBlock<string> sendSpecialMessageBuffer,
-            BufferBlock<string> clientInfoBuffer) {
+            ConnectionClientProducer connectionClientProducer) {
             _connectionClientProducer = connectionClientProducer;
             _cancellationToken = cancellationToken;
-            _sendMessageBuffer = sendMessageBuffer;
-            _sendSpecialMessageBuffer = sendSpecialMessageBuffer;
-            _clientInfoBuffer = clientInfoBuffer;
 			InitializeComponent();
 			this.KeyPreview = true;
 
             DevViewForm = new DevViewForm();
+            StatusForm = new StatusForm();
             MapWindow = new MapWindow();
             _aliases.LoadAliases();
 		}
@@ -61,10 +52,13 @@ namespace MudClient.Management {
             base.OnShown(e);
 
             DevViewForm.Show(this);
+            StatusForm.Show(this);
 
             MapWindow.Show(this);
 
             this.textBox.Focus();
+
+            this._isShown = true;
         }
 
         protected override void OnKeyDown(KeyEventArgs e) {
@@ -89,12 +83,6 @@ namespace MudClient.Management {
                 }
             }
 
-            var hotKey = _hotKeyCollection[e.KeyData];
-            if (hotKey != null) {
-                HandleInput(hotKey.CommandText);
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-            }
             else if (e.KeyCode == Keys.Enter) {
                 HandleInput(this.textBox.Text);
                 e.Handled = true;
@@ -102,6 +90,7 @@ namespace MudClient.Management {
             }
 		}
 
+        // todo: move input handling to a separate file
 		private async Task HandleInput(string input) {
 			var inputLines = (input ?? string.Empty).Split(new[] { Options.CommandDelimiter }, StringSplitOptions.None);
             bool firstLine = true;
@@ -118,9 +107,6 @@ namespace MudClient.Management {
                     case COMMAND_QUICK_CONNECT:
                         QuickConnect(inputStringSplit);
                         break;
-					case COMMAND_HOTKEY:
-						ProcessHotKeyCommand(inputStringSplit);
-						break;
                     case COMMAND_QUIT:
                         Close();
                         break;
@@ -130,11 +116,11 @@ namespace MudClient.Management {
                             textBox.SelectAll();
                             return;
                         } else if (_aliases.SpecialAliasesDictionary.Contains(inputStringSplit[0].Trim())) {
-                            await _sendSpecialMessageBuffer.SendAsync(inputLine.Trim());
+                            await Store.ComplexAlias.SendAsync(inputLine.Trim());
                         } else if (_aliases.Dictionary.TryGetValue(inputLine.Trim(), out var alias)) {
                             await HandleInput(alias.MapsTo);
                         } else {
-                            await _sendMessageBuffer.SendAsync(inputLine);
+                            await Store.TcpSend.SendAsync(inputLine);
                         }
 						break;
 				}
@@ -144,32 +130,11 @@ namespace MudClient.Management {
             textBox.SelectAll();
 		}
 
-		private void ProcessHotKeyCommand(string[] inputParts) {
-			if (inputParts.Length != 3) {
-				throw new Exception($"The {COMMAND_HOTKEY} command requires 3 parts.");
-			}
-
-			var keys = _hotKeyCollection.ResolveKeys(inputParts[1]);
-			if (keys == Keys.Enter) {
-				throw new Exception(@"Enter cannot be used as a hotkey.");
-			}
-
-			if (_hotKeyCollection[keys] != null) {
-				throw new Exception($"The key combination already exists.");
-			}
-
-			if (string.IsNullOrWhiteSpace(inputParts[2])) {
-				throw new Exception(@"The command text cannot be blank.");
-			}
-
-            _hotKeyCollection.Add(keys, inputParts[2]);
-		}
-
         private async Task ProcessAliasCommand(string input) {
             var inputParts = input.Split(' ');
             if (inputParts.Length == 1) {
                 string aliasesDescription = "Aliases:\n" + string.Join("\n", _aliases.Dictionary.Values.OrderBy(al => al.FileIndex).Select(al => $"{al.Alias} => {al.MapsTo}"));
-                await _clientInfoBuffer.SendAsync(aliasesDescription);
+                await Store.ClientInfo.SendAsync(aliasesDescription);
                 return;
             }
 
@@ -178,10 +143,10 @@ namespace MudClient.Management {
 
             if (string.IsNullOrWhiteSpace(mapTo)) {
                 _aliases.SetAlias(alias, null);
-                await _clientInfoBuffer.SendAsync($"Cleared Alias: {alias}");
+                await Store.ClientInfo.SendAsync($"Cleared Alias: {alias}");
             } else {
                 _aliases.SetAlias(alias, mapTo);
-                await _clientInfoBuffer.SendAsync($"Set Alias: {alias} => {mapTo}");
+                await Store.ClientInfo.SendAsync($"Set Alias: {alias} => {mapTo}");
             }
 
         }
@@ -206,8 +171,8 @@ namespace MudClient.Management {
             onConnectionEstablished = async (args) => {
                 var lines = File.ReadAllLines("./quickconnect.txt");
                 if (lines.Length > 1) {
-                    await _sendMessageBuffer.SendAsync(lines[0]);
-                    await _sendMessageBuffer.SendAsync(lines[1]);
+                    await Store.TcpSend.SendAsync(lines[0]);
+                    await Store.TcpSend.SendAsync(lines[1]);
                 }
                 _connectionClientProducer.OnConnectionEstablished -= onConnectionEstablished;
             };
@@ -234,6 +199,10 @@ namespace MudClient.Management {
 
         public void WriteToOutput(string message, Color textColor)
         {
+            if (!_isShown) {
+                return;
+            }
+
             Action AppendText = () => {
                 richTextBox.AppendFormattedText(message, textColor);
                 // Debug.Write(message);
@@ -247,6 +216,10 @@ namespace MudClient.Management {
         }
 
         public void WriteToOutput(List<FormattedOutput> outputs) {
+            if (!_isShown) {
+                return;
+            }
+
             if (!outputs.Any()) {
                 return;
             }
@@ -300,12 +273,6 @@ namespace MudClient.Management {
 
 		private void closeToolStripMenuItem_Click(object sender, EventArgs e) {
 			this.Close();
-		}
-
-		private void hotKeysToolStripMenuItem_Click(object sender, EventArgs e) {
-            using (var form = new HotKeysForm(_hotKeyCollection)) {
-                form.ShowDialog(this);
-            }
 		}
 
         private void hotKeysDevWindowStripMenuItem_Click(object sender, EventArgs e) {

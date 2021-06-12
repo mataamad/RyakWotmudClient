@@ -11,8 +11,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MudClient {
-    // todo: will load the dumped zmud map from a local sql server db
-    // then eventually do some funky stuff with it (map it, save the data in a json file or csv or something so that I have something easy to distribute)
     public class MapDataLoader {
 
         public ZmudDbOjectTblRow[] Rooms { get; private set; }
@@ -45,8 +43,8 @@ namespace MudClient {
             }*/
         }
 
-        // unused
-        private const string ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=""Mud DB Dump"";Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        // private const string ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=""Mud DB Dump"";Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        private const string ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=""ZmudDump2021"";Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         private void LoadFromDb() {
             using (var connection = new SqlConnection(ConnectionString)) {
                 connection.Open();

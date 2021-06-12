@@ -1,38 +1,18 @@
-﻿using MudClient.Extensions;
-using MudClient.Management;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace MudClient {
     public class DoorsCommands {
-        private readonly BufferBlock<List<FormattedOutput>> _outputBuffer;
-        private readonly BufferBlock<string> _sendMessageBuffer;
-        private readonly BufferBlock<string> _sendSpecialMessageBuffer;
-        private readonly BufferBlock<string> _clientInfoBuffer;
-
         private readonly MapWindow _map;
 
-        public DoorsCommands(BufferBlock<List<FormattedOutput>> outputBuffer,
-            BufferBlock<string> sendMessageBuffer,
-            BufferBlock<string> sendSpecialMessageBuffer,
-            BufferBlock<string> clientInfoBuffer,
-            MapWindow mapWindow) {
-
-            _outputBuffer = outputBuffer;
-            _sendMessageBuffer = sendMessageBuffer;
-            _sendSpecialMessageBuffer = sendSpecialMessageBuffer;
-            _clientInfoBuffer = clientInfoBuffer;
+        public DoorsCommands(MapWindow mapWindow) {
             _map = mapWindow;
-        }
 
-        public void LoopOnNewThread(CancellationToken cancellationToken)
-        {
-            // Task.Run(() => LoopFormattedOutput(cancellationToken));
-            Task.Run(() => LoopSpecialMessage(cancellationToken));
+            Store.ComplexAlias.SubscribeAsync(async (message) => {
+                await ProcessDoorCommands(message);
+            });
         }
 
         private enum RoomSeenState {
@@ -42,40 +22,29 @@ namespace MudClient {
             SeenExits
         }
 
-        private async Task LoopSpecialMessage(CancellationToken cancellationToken) {
-            while (!_map.DataLoaded) {
-                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
-            }
-
-            while (!cancellationToken.IsCancellationRequested) {
-                string output = await _sendSpecialMessageBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
-                if (cancellationToken.IsCancellationRequested) {
-                    return;
-                }
-
-                // process the command the player entered
-                var splitOutput = output.Split(' ');
-                if (splitOutput.Length != 1) {
-                    if (splitOutput[0] == "o") {
-                        if (new[] { "n", "e", "s", "w" }.Contains(splitOutput[1])) {
-                            splitOutput = new[] { "o" + splitOutput[2] };
-                        } else {
-                            await _sendMessageBuffer.SendAsync($"open {string.Join(" ", splitOutput.Skip(1))}");
-                            continue;
-                        }
-                    } else if (splitOutput[0] == "c") {
-                        if (new[] { "n", "e", "s", "w" }.Contains(splitOutput[1])) {
-                            splitOutput = new[] { "s" + splitOutput[1] };
-                        } else {
-                            await _sendMessageBuffer.SendAsync($"close {string.Join(" ", splitOutput.Skip(1))}");
-                            continue;
-                        }
+        private async Task ProcessDoorCommands(string output) {
+            // process the command the player entered
+            var splitOutput = output.Split(' ');
+            if (splitOutput.Length != 1) {
+                if (splitOutput[0] == "o") {
+                    if (new[] { "n", "e", "s", "w" }.Contains(splitOutput[1])) {
+                        splitOutput = new[] { "o" + splitOutput[2] };
+                    } else {
+                        await Store.TcpSend.SendAsync($"open {string.Join(" ", splitOutput.Skip(1))}");
+                        return;
+                    }
+                } else if (splitOutput[0] == "c") {
+                    if (new[] { "n", "e", "s", "w" }.Contains(splitOutput[1])) {
+                        splitOutput = new[] { "s" + splitOutput[1] };
+                    } else {
+                        await Store.TcpSend.SendAsync($"close {string.Join(" ", splitOutput.Skip(1))}");
+                        return;
                     }
                 }
-                string command = splitOutput.First().ToLower();
-                // todo: parse the message
+            }
+            string command = splitOutput.First().ToLower();
 
-                var commands = new HashSet<string> {
+            var commands = new HashSet<string> {
                     "o", "c", "cll", "opp", "unl", "loc", "pic",
                     "on", "oe", "os", "ow", "ou", "od",
                     "sn", "se", "ss", "sw", "su", "sd",
@@ -84,50 +53,49 @@ namespace MudClient {
                     "picn", "pice", "pics", "pic", "picu", "picd",
                 };
 
-                if (!commands.Contains(command)) {
-                    continue;
-                }
+            if (!commands.Contains(command)) {
+                return;
+            }
 
 
-                // need a map window command to get all doors, and also to get doors in a direction
+            // need a map window command to get all doors, and also to get doors in a direction
 
-                // todo: this probably shouldn't be accessed from here
-                var currentRoomExits = new ZmudDbExitTblRow[0];
-                _map.ExitsByFromRoom.TryGetValue(_map.CurrentVirtualRoomId, out currentRoomExits);
+            // todo: this probably shouldn't be accessed from here
+            var currentRoomExits = new ZmudDbExitTblRow[0];
+            MapData.ExitsByFromRoom.TryGetValue(MapData.CurrentVirtualRoomId, out currentRoomExits);
 
-                var exitsWithDoors = currentRoomExits.Where(exit => !string.IsNullOrEmpty(exit.Param)).ToArray();
+            var exitsWithDoors = currentRoomExits.Where(exit => !string.IsNullOrEmpty(exit.Param)).ToArray();
 
-                if (exitsWithDoors.Length == 0) {
-                    await _clientInfoBuffer.SendAsync($"DOOR NOT FOUND FOR: {output}");
-                    continue;
-                }
+            if (exitsWithDoors.Length == 0) {
+                await Store.ClientInfo.SendAsync($"DOOR NOT FOUND FOR: {output}");
+            }
 
 
-                (string commandType, DirectionType direction, bool all) = ParseCommand(command);
+            (string commandType, DirectionType direction, bool all) = ParseCommand(command);
 
-                if (direction == DirectionType.Other) {
-                    if (all) {
-                        foreach (var exit in exitsWithDoors) {
-                            await _sendMessageBuffer.SendAsync($"{commandType} {exit.Param}");
-                        }
-                    } else {
-                        // open the one door in the room
-                        if (exitsWithDoors.Length == 1) {
-                            await _sendMessageBuffer.SendAsync($"{commandType} {exitsWithDoors[0].Param}");
-                        } else {
-                            await _clientInfoBuffer.SendAsync($"MULTIPLE DOORS: {string.Join("|", exitsWithDoors.Select(e => e.Param))}");
-                        }
+            if (direction == DirectionType.Other) {
+                if (all) {
+                    foreach (var exit in exitsWithDoors) {
+                        await Store.TcpSend.SendAsync($"{commandType} {exit.Param}");
                     }
                 } else {
-                    // open the door in the direction specified
-                    var exitsWithDoor = exitsWithDoors.Where(exit => exit.DirType == (int)direction).ToArray();
-                    if (exitsWithDoor.Length == 1) {
-                        await _sendMessageBuffer.SendAsync($"{commandType} {exitsWithDoor[0].Param}");
+                    // open the one door in the room
+                    if (exitsWithDoors.Length == 1) {
+                        await Store.TcpSend.SendAsync($"{commandType} {exitsWithDoors[0].Param}");
                     } else {
-                        await _clientInfoBuffer.SendAsync($"DOOR NOT FOUND FOR: {output}");
+                        await Store.ClientInfo.SendAsync($"MULTIPLE DOORS: {string.Join("|", exitsWithDoors.Select(e => e.Param))}");
                     }
                 }
+            } else {
+                // open the door in the direction specified
+                var exitsWithDoor = exitsWithDoors.Where(exit => exit.DirType == (int)direction).ToArray();
+                if (exitsWithDoor.Length == 1) {
+                    await Store.TcpSend.SendAsync($"{commandType} {exitsWithDoor[0].Param}");
+                } else {
+                    await Store.ClientInfo.SendAsync($"DOOR NOT FOUND FOR: {output}");
+                }
             }
+
         }
 
         private (string commandType, DirectionType direction, bool all) ParseCommand(string command) {

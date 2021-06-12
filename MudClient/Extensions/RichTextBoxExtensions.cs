@@ -23,9 +23,9 @@ namespace MudClient.Common.Extensions {
             var selectionLength = Math.Min(message.Length, richTextBox.TextLength - charIndex);
 
             if (selectionLength > 0 || message.Length > 0) {
-                richTextBox.SelectionColor = textColor;
                 richTextBox.SelectionStart = charIndex;
                 richTextBox.SelectionLength = selectionLength;
+                richTextBox.SelectionColor = textColor;
                 richTextBox.SelectedText = message;
             }
         }

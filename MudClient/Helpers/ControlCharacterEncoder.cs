@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace MudClient {
@@ -28,6 +29,36 @@ namespace MudClient {
 
             return sb.ToString();
         }
+
+        // Encode characters and split into newlines.  ignore '\n's and splits on '\r's so that '\r\x00' comes out nice
+        public static List<string> EncodeAndSplit(string s) {
+            var lines = new List<string>();
+
+            var sb = new StringBuilder();
+            foreach (char c in s) {
+                if (Char.IsControl(c) || (c > 127 && c < 256)) {
+                    if (c == '\r') {
+                        // split
+                        lines.Add(sb.ToString());
+                        sb.Clear();
+                    } else if (c == '\n') {
+                        // skip
+                    } else {
+                        // encode control characters as e.g. \x1A
+                        sb.Append($"\\x{(byte)c:X2}");
+                    }
+                } else if (c > 255) {
+                    sb.Append($"\\u{(int)c:X4}");
+                } else {
+                    sb.Append(c);
+                }
+            }
+            if (sb.Length > 0) {
+                lines.Add(sb.ToString());
+            }
+            return lines;
+        }
+
 
 
         public static string Decode(string s) {

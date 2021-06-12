@@ -32,6 +32,7 @@ namespace MudClient {
                         state = RoomSeenState.SeenTitle;
 
                         // todo: check for newlines - should only be either at the start or end
+                        // todo: after status bar is removed perhaps will only ever be start through end? - comb logs to check
                     }
                 } else if (state == RoomSeenState.SeenTitle) {
                     if (output.TextColor != MudColors.ForegroundColor) {

@@ -61,7 +61,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 1001);
+            this.ClientSize = new System.Drawing.Size(784, 900);
             this.Controls.Add(this.controlPanel);
             this.Location = new System.Drawing.Point(1920, 0);
             this.Name = "DevViewForm";

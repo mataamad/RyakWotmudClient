@@ -1,45 +1,17 @@
-﻿using MudClient.Extensions;
-using MudClient.Management;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using MudClient.Management;
 using System.Media;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace MudClient {
     public class NarrsWriter {
-        private readonly BufferBlock<List<FormattedOutput>> _outputBuffer;
-
         private readonly MudClientForm _form;
 
-        public NarrsWriter(BufferBlock<List<FormattedOutput>> outputBuffer, MudClientForm form) {
-            _outputBuffer = outputBuffer;
+        public NarrsWriter(MudClientForm form) {
             _form = form;
-        }
 
-        public void LoopOnNewThread(CancellationToken cancellationToken)
-        {
-            Task.Run(() => LoopFormattedOutput(cancellationToken));
-        }
-
-        private enum RoomSeenState {
-            NotStarted,
-            SeenTitle,
-            SeenDescirption,
-            SeenExits
-        }
-
-        private async Task LoopFormattedOutput(CancellationToken cancellationToken) {
-            while (!cancellationToken.IsCancellationRequested) {
-                List<FormattedOutput> outputs = await _outputBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
-                if (cancellationToken.IsCancellationRequested) {
-                    return;
-                }
-
+            Store.FormattedTextWithoutStatusLine.Subscribe((outputs) => {
                 foreach (var output in outputs) {
                     foreach (var line in output.Text.Split('\n')) {
+                        // todo: also include my narrates in here
                         // todo: should match on colour and also with a regex instead of doing this
                         if (line.Contains(" narrates '")
                             || line.Contains(" tells you '")
@@ -59,7 +31,15 @@ namespace MudClient {
                         }
                     }
                 }
-            }
+            });
+        }
+
+
+        private enum RoomSeenState {
+            NotStarted,
+            SeenTitle,
+            SeenDescirption,
+            SeenExits
         }
     }
 }

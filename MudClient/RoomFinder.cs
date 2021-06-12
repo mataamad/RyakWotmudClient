@@ -1,24 +1,15 @@
-﻿using MudClient.Extensions;
-using MudClient.Management;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace MudClient {
     public class RoomFinder {
-        private readonly BufferBlock<List<FormattedOutput>> _outputBuffer;
-        private readonly BufferBlock<string> _sentMessageBuffer;
-        private readonly BufferBlock<string> _sendSpecialMessageBuffer;
-        private readonly BufferBlock<string> _clientInfoBuffer;
-
         // The string always ends with one of these
         private HashSet<string> _movementFailedStrings = new HashSet<string> {
             /*The * */ "seems to be closed.",
-            "Nah... You feel too relaxed to do that...",
+            "Nah... You feel too relaxed to do that..",
             "In your dreams, or what?",
             "Maybe you should get on your feet first?",
             /*No way%s*/ "You're fighting for your life!",
@@ -28,7 +19,7 @@ namespace MudClient {
             "You can't ride in there.",
             "You can't ride on water.",
             "You can't ride there on a horse!",
-            "You need a bot to go there.",
+            "You need a boat to go there.",
             "Your mount is too exhausted.",
             "Your mount is engaged in combat!",
             "Your mount ought to be awake and standing first!",
@@ -93,25 +84,44 @@ namespace MudClient {
         private readonly MapWindow _map;
 
         public RoomFinder(
-            BufferBlock<List<FormattedOutput>> outputBuffer,
-            BufferBlock<string> sentMessageBuffer,
-            BufferBlock<string> sendSpecialMessageBuffer,
-            BufferBlock<string> clientInfoBuffer,
             MapWindow mapWindow) {
-            _outputBuffer = outputBuffer;
-            _sentMessageBuffer = sentMessageBuffer;
-            _sendSpecialMessageBuffer = sendSpecialMessageBuffer;
-            _clientInfoBuffer = clientInfoBuffer;
             _map = mapWindow;
 
             _movementFailedRegex = new Regex(string.Join("$|", _movementFailedStrings), RegexOptions.Compiled);
+
+            Store.TcpSend.Subscribe((message) => {
+                ProcessSentMessage(message);
+            });
+
+            Store.FormattedTextWithoutStatusLine.SubscribeAsync(async (richText) => {
+                await ProcessRichText(richText);
+            });
+
+            Store.ComplexAlias.Subscribe((output) => {
+                if (output.Trim().ToLower() == "qf") {
+                    QuickFind();
+                }
+            });
         }
 
-        public void LoopOnNewThread(CancellationToken cancellationToken)
-        {
-            Task.Run(() => LoopFormattedOutput(cancellationToken));
-            Task.Run(() => LoopSentMessage(cancellationToken));
-            Task.Run(() => LoopSpecialMessage(cancellationToken));
+        public void ProcessSentMessage(string output) {
+            // process the command the player entered
+            output = output.Trim().ToLower();
+            if (new[] { "n", "s", "e", "w", "u", "d" }.Contains(output)) {
+                MoveVirtualRoom(output);
+                Movements.Add(new Movement {
+                    Direction = output,
+                    DirectionType = DirectionToDirectionType(output),
+                    Time = DateTime.Now,
+                });
+                FindSmartRoomId();
+            }
+            if (output == "f") {
+                OtherMovements.Add(new OtherMovement {
+                    FleeEntered = true,
+                    Time = DateTime.Now,
+                });
+            }
         }
 
         public enum RoomSeenState {
@@ -121,179 +131,124 @@ namespace MudClient {
             SeenExits
         }
 
-        private async Task LoopFormattedOutput(CancellationToken cancellationToken) {
-            while (!_map.DataLoaded) {
-                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+        private async Task ProcessRichText(List<FormattedOutput> outputs) {
+            if (!MapData.DataLoaded) {
+                return;
             }
 
-            while (!cancellationToken.IsCancellationRequested) {
-                List<FormattedOutput> outputs = await _outputBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
-                if (cancellationToken.IsCancellationRequested) {
-                    return;
-                }
-
-                RoomSeenState state = RoomSeenState.NotStarted;
-                string roomName = null;
-                foreach (var output in outputs) {
-                    if (state == RoomSeenState.NotStarted) {
-                        string text = output.Text;
-                        if (output.TextColor == MudColors.Dictionary[MudColors.ANSI_CYAN]) {
-                            if (text.Contains("speaks from the") || text.Contains("answers your prayer")) {
-                                continue;
-                            }
-                            roomName = text;
-                            state = RoomSeenState.SeenTitle;
-
-                            // todo: check for newlines - should only be either at the start or end
-                        }
-                    } else if (state == RoomSeenState.SeenTitle) {
-                        if (output.TextColor != MudColors.ForegroundColor) {
-                            roomName = null;
-                            state = RoomSeenState.NotStarted;
+            RoomSeenState state = RoomSeenState.NotStarted;
+            string roomName = null;
+            foreach (var output in outputs) {
+                if (state == RoomSeenState.NotStarted) {
+                    string text = output.Text;
+                    if (output.TextColor == MudColors.Dictionary[MudColors.ANSI_CYAN]) {
+                        if (text.Contains("speaks from the") || text.Contains("answers your prayer")) {
                             continue;
                         }
-                        string[] splitIntoLines = output.Text.Split('\n');
-                        int exitsLine = -1;
-                        for (int i = 0; i < splitIntoLines.Length; i++) {
-                            if (splitIntoLines[i].StartsWith("[ obvious exits: ")) {
-                                exitsLine = i;
-                                break;
-                            }
-                        }
-                        if (exitsLine == -1) {
-                            roomName = null;
-                            state = RoomSeenState.NotStarted;
-                            continue;
-                        }
-                        int skipLines = 0;
-                        if (string.IsNullOrEmpty(splitIntoLines.First())) {
-                            skipLines = 1;
-                        }
+                        roomName = text;
+                        state = RoomSeenState.SeenTitle;
 
-                        // todo: there are probably some other checks I can add here to ignore descriptions that are known bad
-                        // but for now I guess just include everything
-
-                        var room = new Room {
-                            Name = roomName,
-                            Description = string.Join("\n", splitIntoLines.Skip(skipLines).Take(exitsLine - skipLines)) + "\n",
-                            ExitsLine = splitIntoLines[exitsLine],
-                            Time = DateTime.Now,
-                        };
+                        // todo: check for newlines - should only be either at the start or end
+                    }
+                } else if (state == RoomSeenState.SeenTitle) {
+                    if (output.TextColor != MudColors.ForegroundColor) {
                         roomName = null;
                         state = RoomSeenState.NotStarted;
-                        SeenRooms.Add(room);
-                        await FindFoundRoomId(room);
-                        await ProcessMovementReceived(room);
-                        FindSmartRoomId();
+                        continue;
                     }
-                }
-
-                foreach (var output in outputs) {
-                    var splitIntoLines = output.Text.Split('\n');
-                    foreach (var line in splitIntoLines) {
-                        if (_movementFailedRegex.IsMatch(line)) {
-                            OtherMovements.Add(new OtherMovement {
-                                MovementFailed = true,
-                                Line = line,
-                                Time = DateTime.Now,
-                            });
-
-                            await ProcessMovementReceived(null, movementFailed: true);
-                            FindSmartRoomId();
-                        }
-                        if (line.StartsWith(_followString)) {
-                            OtherMovements.Add(new OtherMovement {
-                                LeaderFollowed = true,
-                                Line = line,
-                                Time = DateTime.Now,
-                            });
-                            FindSmartRoomId();
-                        }
-                        if (line.EndsWith(_blindMoveString) || line.EndsWith(_darkMoveString)) {
-                            OtherMovements.Add(new OtherMovement {
-                                MovementSucceeded = true,
-                                Line = line,
-                                Time = DateTime.Now,
-                            });
-                            await ProcessMovementReceived(null, movementFailed: false, darkMovement: true);
-                            FindSmartRoomId();
-                        }
-                        if (line.StartsWith(_fleeCompleteString)) {
-                            OtherMovements.Add(new OtherMovement {
-                                FleeSucceeded = true,
-                                Line = line,
-                                Time = DateTime.Now,
-                            });
-                            FindSmartRoomId();
-                        }
-                        if (line.StartsWith(_cannotGoThatWay)) {
-                            OtherMovements.Add(new OtherMovement {
-                                CouldNotTravel = true,
-                                Line = line,
-                                Time = DateTime.Now,
-                            });
-                            await ProcessMovementReceived(null, couldNotTravel: true);
+                    string[] splitIntoLines = output.Text.Split('\n');
+                    int exitsLine = -1;
+                    for (int i = 0; i < splitIntoLines.Length; i++) {
+                        if (splitIntoLines[i].StartsWith("[ obvious exits: ")) {
+                            exitsLine = i;
+                            break;
                         }
                     }
+                    if (exitsLine == -1) {
+                        roomName = null;
+                        state = RoomSeenState.NotStarted;
+                        continue;
+                    }
+                    int skipLines = 0;
+                    if (string.IsNullOrEmpty(splitIntoLines.First())) {
+                        skipLines = 1;
+                    }
 
-                }
-            }
-        }
+                    // todo: there are probably some other checks I can add here to ignore descriptions that are known bad
+                    // but for now I guess just include everything
 
-        private async Task LoopSentMessage(CancellationToken cancellationToken) {
-            while (!_map.DataLoaded) {
-                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
-            }
-
-            while (!cancellationToken.IsCancellationRequested) {
-                string output = await _sentMessageBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
-                if (cancellationToken.IsCancellationRequested) {
-                    return;
-                }
-
-                // process the command the player entered
-                output = output.Trim().ToLower();
-                if (new[] { "n", "s", "e", "w", "u", "d" }.Contains(output)) {
-                    MoveVirtualRoom(output);
-                    Movements.Add(new Movement {
-                        Direction = output,
-                        DirectionType = DirectionToDirectionType(output),
+                    var room = new Room {
+                        Name = roomName,
+                        Description = string.Join("\n", splitIntoLines.Skip(skipLines).Take(exitsLine - skipLines)) + "\n",
+                        ExitsLine = splitIntoLines[exitsLine],
                         Time = DateTime.Now,
-                    });
+                    };
+                    roomName = null;
+                    state = RoomSeenState.NotStarted;
+                    SeenRooms.Add(room);
+                    await FindFoundRoomId(room);
+                    await ProcessMovementReceived(room);
                     FindSmartRoomId();
                 }
-                if (output == "f") {
-                    OtherMovements.Add(new OtherMovement {
-                        FleeEntered = true,
-                        Time = DateTime.Now,
-                    });
-                }
-            }
-        }
-
-        private async Task LoopSpecialMessage(CancellationToken cancellationToken) {
-            while (!_map.DataLoaded) {
-                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
             }
 
-            while (!cancellationToken.IsCancellationRequested) {
-                string output = await _sendSpecialMessageBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
-                if (cancellationToken.IsCancellationRequested) {
-                    return;
+            foreach (var output in outputs) {
+                var splitIntoLines = output.Text.Split('\n');
+                foreach (var line in splitIntoLines) {
+                    if (_movementFailedRegex.IsMatch(line)) {
+                        OtherMovements.Add(new OtherMovement {
+                            MovementFailed = true,
+                            Line = line,
+                            Time = DateTime.Now,
+                        });
+
+                        await ProcessMovementReceived(null, movementFailed: true);
+                        FindSmartRoomId();
+                    }
+                    if (line.StartsWith(_followString)) {
+                        OtherMovements.Add(new OtherMovement {
+                            LeaderFollowed = true,
+                            Line = line,
+                            Time = DateTime.Now,
+                        });
+                        FindSmartRoomId();
+                    }
+                    if (line.EndsWith(_blindMoveString) || line.EndsWith(_darkMoveString)) {
+                        OtherMovements.Add(new OtherMovement {
+                            MovementSucceeded = true,
+                            Line = line,
+                            Time = DateTime.Now,
+                        });
+                        await ProcessMovementReceived(null, movementFailed: false, darkMovement: true);
+                        FindSmartRoomId();
+                    }
+                    if (line.StartsWith(_fleeCompleteString)) {
+                        OtherMovements.Add(new OtherMovement {
+                            FleeSucceeded = true,
+                            Line = line,
+                            Time = DateTime.Now,
+                        });
+                        FindSmartRoomId();
+                    }
+                    if (line.StartsWith(_cannotGoThatWay)) {
+                        OtherMovements.Add(new OtherMovement {
+                            CouldNotTravel = true,
+                            Line = line,
+                            Time = DateTime.Now,
+                        });
+                        await ProcessMovementReceived(null, couldNotTravel: true);
+                    }
                 }
 
-                output = output.Trim().ToLower();
-                if (output == "qf") {
-                    QuickFind();
-                }
             }
+
         }
 
         private void QuickFind() {
-            _map.CurrentRoomId = _foundRoomId;
-            _map.CurrentVirtualRoomId = _map.CurrentRoomId;
+            MapData.CurrentRoomId = _foundRoomId;
+            MapData.CurrentVirtualRoomId = MapData.CurrentRoomId;
 
-            _map.CurrentSmartRoomId = _map.CurrentRoomId;
+            MapData.CurrentSmartRoomId = MapData.CurrentRoomId;
             CurrentOtherMovement = OtherMovements.Count - 1;
             ProcessedOtherMovement = OtherMovements.Count - 1;
             CurrentRoomIndex = SeenRooms.Count - 1;
@@ -303,19 +258,22 @@ namespace MudClient {
             VisibleMovement = Movements.Count - 1;
             
 
-
             _map.Invalidate();
         }
 
         private void MoveVirtualRoom(string movement) {
+            if (MapData.CurrentVirtualRoomId == -1) {
+                return;
+            }
+
             movement = movement.Trim().ToLower();
             // nsewud follow directions
-            bool inValidRoom = _map.RoomsById.TryGetValue(_map.CurrentVirtualRoomId, out var currentRoom);
+            bool inValidRoom = MapData.RoomsById.TryGetValue(MapData.CurrentVirtualRoomId, out var currentRoom);
             if (!inValidRoom) {
                 return;
             }
 
-            bool roomHasExits = _map.ExitsByFromRoom.TryGetValue(_map.CurrentVirtualRoomId, out var currentExits);
+            bool roomHasExits = MapData.ExitsByFromRoom.TryGetValue(MapData.CurrentVirtualRoomId, out var currentExits);
             if (!roomHasExits) {
                 return;
             }
@@ -326,7 +284,7 @@ namespace MudClient {
             if (link == null) {
                 return;
             }
-            _map.CurrentVirtualRoomId = link.ToID.Value;
+            MapData.CurrentVirtualRoomId = link.ToID.Value;
 
             _map.Invalidate();
         }
@@ -397,15 +355,15 @@ namespace MudClient {
             }
 
             if (currentRoom.PossibleRoomIds.Count == 1) {
-                _map.CurrentSmartRoomId = currentRoom.PossibleRoomIds.Single();
+                MapData.CurrentSmartRoomId = currentRoom.PossibleRoomIds.Single();
                 foreach (var movement in unprocessedMovements) {
-                    _map.ExitsByFromRoom.TryGetValue(_map.CurrentSmartRoomId, out var currentExits);
+                    MapData.ExitsByFromRoom.TryGetValue(MapData.CurrentSmartRoomId, out var currentExits);
 
                     var link = currentExits?.FirstOrDefault(exit => exit.DirType.Value == (int)movement.DirectionType);
                     if (link == null) {
                         continue;
                     }
-                    _map.CurrentSmartRoomId = link.ToID.Value;
+                    MapData.CurrentSmartRoomId = link.ToID.Value;
                 }
                 _map.Invalidate();
 
@@ -413,13 +371,13 @@ namespace MudClient {
             } else {
                 // can't be certain the now room on the map is correct, so go off last 'quick' position
                 foreach (var movement in Movements.Skip(ProcessedCurrentMovement + 1)) {
-                    _map.ExitsByFromRoom.TryGetValue(_map.CurrentSmartRoomId, out var currentExits);
+                    MapData.ExitsByFromRoom.TryGetValue(MapData.CurrentSmartRoomId, out var currentExits);
 
                     var link = currentExits?.FirstOrDefault(exit => exit.DirType.Value == (int)movement.DirectionType);
                     if (link == null) {
                         continue;
                     }
-                    _map.CurrentSmartRoomId = link.ToID.Value;
+                    MapData.CurrentSmartRoomId = link.ToID.Value;
 
                 }
                 _map.Invalidate();
@@ -430,16 +388,16 @@ namespace MudClient {
 
         // unused - using ProcessMovementReceived instead
         private async Task FindFoundRoomId(Room room) {
-            var possibleRooms = PossibleRoomMatcher.FindPossibleRooms(_map, room);
+            var possibleRooms = PossibleRoomMatcher.FindPossibleRooms(room);
             room.PossibleRoomIds = possibleRooms.Select(r => r.RoomData.ObjID.Value).ToList();
 
             if (possibleRooms.Any()) {
                 _foundRoomId = possibleRooms.First().RoomData.ObjID.Value;
 
                 if (possibleRooms.Count > 1) {
-                    await _clientInfoBuffer.SendAsync("Map: Multiple matching rooms found.");
+                    await Store.ClientInfo.SendAsync("Map: Multiple matching rooms found.");
 
-                    _map.RoomsById.TryGetValue(_map.CurrentRoomId, out var previousRoom);
+                    MapData.RoomsById.TryGetValue(MapData.CurrentRoomId, out var previousRoom);
                     if (previousRoom != null) {
                         // if there are multiple rooms try to pick a match in the same ZoneId
                         var matchesZone = possibleRooms.Where(r => r.RoomData.ZoneID.Value == previousRoom.ZoneID.Value).ToList();
@@ -451,7 +409,7 @@ namespace MudClient {
                     }
                 }
             } else {
-                await _clientInfoBuffer.SendAsync("Map: No matching rooms found.");
+                await Store.ClientInfo.SendAsync("Map: No matching rooms found.");
             }
         }
 
@@ -471,8 +429,8 @@ namespace MudClient {
             } else if (movementFailed) {
                 // failed - don't need to do anything to the current room
                 // but do reset the spammed to room
-                await _clientInfoBuffer.SendAsync("Map: Move failed, resetting virtual room");
-                _map.CurrentVirtualRoomId = _map.CurrentRoomId;
+                await Store.ClientInfo.SendAsync("Map: Move failed, resetting virtual room");
+                MapData.CurrentVirtualRoomId = MapData.CurrentRoomId;
             } else if (darkMovement) {
                 await MoveCurrentRoom(null, movement);
             } else {
@@ -483,23 +441,23 @@ namespace MudClient {
         }
 
         private async Task MoveCurrentRoom(Room newRoom, Movement movement) {
-            _map.RoomsById.TryGetValue(_map.CurrentRoomId, out var previousRoom);
+            MapData.RoomsById.TryGetValue(MapData.CurrentRoomId, out var previousRoom);
 
             List<PossibleRoom> matchedRooms = new List<PossibleRoom>();
             if (newRoom != null) {
-                matchedRooms = PossibleRoomMatcher.FindPossibleRooms(_map, newRoom);
+                matchedRooms = PossibleRoomMatcher.FindPossibleRooms(newRoom);
                 newRoom.PossibleRoomIds = matchedRooms.Select(r => r.RoomData.ObjID.Value).ToList();
             }
 
             if (!matchedRooms.Any()) {
-                await _clientInfoBuffer.SendAsync("Map: No matching rooms found.");
+                await Store.ClientInfo.SendAsync("Map: No matching rooms found.");
             }
             if (matchedRooms.Count > 1) {
-                await _clientInfoBuffer.SendAsync("Map: Multiple matching rooms found.");
+                await Store.ClientInfo.SendAsync("Map: Multiple matching rooms found.");
             }
 
             if (previousRoom != null && movement != null) {
-                _map.ExitsByFromRoom.TryGetValue(_map.CurrentRoomId, out var previousRoomExits);
+                MapData.ExitsByFromRoom.TryGetValue(MapData.CurrentRoomId, out var previousRoomExits);
 
 
                 ZmudDbExitTblRow exit = null;
@@ -511,14 +469,14 @@ namespace MudClient {
                     int newRoomId = exit.ToID.Value;
 
                     if (matchedRooms.Any() && !matchedRooms.Any(mr => mr.RoomData.ObjID.Value == newRoomId)) {
-                        await _clientInfoBuffer.SendAsync("Map: Moved to new room but didn't match an expected found room");
+                        await Store.ClientInfo.SendAsync("Map: Moved to new room but didn't match an expected found room");
                     }
 
                     // currently trust the map find more than the movement direction code
                     if (matchedRooms.Count == 1) {
-                        _map.CurrentRoomId = matchedRooms[0].RoomData.ObjID.Value;
+                        MapData.CurrentRoomId = matchedRooms[0].RoomData.ObjID.Value;
                     } else {
-                        _map.CurrentRoomId = newRoomId;
+                        MapData.CurrentRoomId = newRoomId;
                     }
 
                     _map.Invalidate();
@@ -526,18 +484,18 @@ namespace MudClient {
                 }
             }
 
-            // didn't recieve a direction - rely purely on map find
+            // didn't receive a direction - rely purely on map find
 
             if (matchedRooms.Any()) {
-                var previousRoomId = _map.CurrentRoomId;
-                _map.CurrentRoomId = matchedRooms.First().RoomData.ObjID.Value;
+                var previousRoomId = MapData.CurrentRoomId;
+                MapData.CurrentRoomId = matchedRooms.First().RoomData.ObjID.Value;
 
                 if (matchedRooms.Count > 1) {
-                    await _clientInfoBuffer.SendAsync("Map: Multiple matching rooms found.");
+                    await Store.ClientInfo.SendAsync("Map: Multiple matching rooms found.");
 
                     if (previousRoom != null) {
                         var matchedAdjacentRooms = new List<int>();
-                        _map.ExitsByFromRoom.TryGetValue(previousRoom.ObjID.Value, out var previousRoomExits);
+                        MapData.ExitsByFromRoom.TryGetValue(previousRoom.ObjID.Value, out var previousRoomExits);
                         if (previousRoomExits != null) {
                             var adjacentRoomIds = previousRoomExits.Select(previousExit => previousExit.ToID.Value);
                             matchedAdjacentRooms = matchedRooms.Select(r => r.RoomData.ObjID.Value).Intersect(adjacentRoomIds).ToList();
@@ -546,21 +504,20 @@ namespace MudClient {
                         var matchesZone = matchedRooms.Where(r => r.RoomData.ZoneID.Value == previousRoom.ZoneID.Value).ToList();
 
                         if (matchedAdjacentRooms.Any()) {
-                            _map.CurrentRoomId = matchedAdjacentRooms.First();
+                            MapData.CurrentRoomId = matchedAdjacentRooms.First();
                         } else if (matchesZone.Any()) {
-                            _map.CurrentRoomId = matchesZone.First().RoomData.ObjID.Value;
+                            MapData.CurrentRoomId = matchesZone.First().RoomData.ObjID.Value;
                         }
                     }
                 }
 
                 // didn't recieve a direction so we should make the virtual room following the current room if we can
-                if (previousRoomId == _map.CurrentVirtualRoomId) {
-                    _map.CurrentVirtualRoomId = _map.CurrentRoomId;
+                if (previousRoomId == MapData.CurrentVirtualRoomId) {
+                    MapData.CurrentVirtualRoomId = MapData.CurrentRoomId;
                 }
             } else {
-                await _clientInfoBuffer.SendAsync("Map: No matching rooms found.");
+                await Store.ClientInfo.SendAsync("Map: No matching rooms found.");
             }
-
         }
 
 

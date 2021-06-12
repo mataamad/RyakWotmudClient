@@ -1,71 +1,65 @@
-﻿using MudClient.Extensions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace MudClient {
     public class RawInputToRichTextConverter {
-        private readonly BufferBlock<string> _inputBuffer;
-        private readonly BufferBlock<List<FormattedOutput>> _outputBuffer;
 
-        public RawInputToRichTextConverter(BufferBlock<string> inputBuffer, BufferBlock<List<FormattedOutput>> outputBuffer) {
-            _inputBuffer = inputBuffer;
-            _outputBuffer = outputBuffer;
-        }
-
-        public void LoopOnNewThread(CancellationToken cancellationToken) {
-            Task.Run(() => Loop(cancellationToken));
-        }
-
-        private async Task Loop(CancellationToken cancellationToken) {
-            while (!cancellationToken.IsCancellationRequested) {
-                string input = await _inputBuffer.ReceiveAsyncIgnoreCanceled(cancellationToken);
-                if (cancellationToken.IsCancellationRequested) {
-                    return;
-                }
-
-                await _outputBuffer.SendAsync(FormatOutput(input));
-            }
+        public RawInputToRichTextConverter() {
+            Store.TcpReceive.SubscribeAsync(async (message) => {
+                await Store.FormattedText.SendAsync(FormatOutput(message));
+            });
         }
 
         // colours text based on the ansi escape sequences
         // minimises the number of elements in the returned List to make display faster
-        private List<FormattedOutput> FormatOutput(string s) {
+        public static List<FormattedOutput> FormatOutput(string s) {
             var output = new List<FormattedOutput>();
 
             const char ESCAPE_CHAR = (char)0x1B;
             const char REPLACE_CURRENT_LINE_CHAR = (char)0x00; // is '\0'
 
+            var previousForegroundColor = MudColors.ForegroundColor;
             var foregroundColor = MudColors.ForegroundColor;
             var sb = new StringBuilder();
             bool replaceCurrentLine = false;
+
+            bool justResetColor = false;
+
             var e = s.GetEnumerator();
             while (e.MoveNext())
             {
+
                 char c = e.Current;
 
                 if (c == ESCAPE_CHAR) {
                     StringBuilder escapeCharSb = new StringBuilder();
 
                     while (e.MoveNext()) {
-                        char escapeChar = e.Current;
-                        if (escapeChar == 'm') {
-                            escapeCharSb.Append(escapeChar);
+                        char ch = e.Current;
+                        if (ch == 'm') {
+                            escapeCharSb.Append(ch);
                             break;
                         }
-                        if (escapeChar != '[' && !char.IsNumber(escapeChar)) {
+                        if (ch != '[' && !char.IsNumber(ch)) {
                             sb.Append("\nUHOH! unrecognised escape sequence - unexpected character\n");
                             break;
                         }
 
-                        escapeCharSb.Append(escapeChar);
+                        escapeCharSb.Append(ch);
                     }
 
-                    if (MudColors.Dictionary.TryGetValue(escapeCharSb.ToString(), out Color escapeColor)) {
+                    var escapeChar = escapeCharSb.ToString();
+                    Color escapeColor = Color.Empty;
+                    if (escapeChar == MudColors.ANSI_RESET) {
+                        // reset to the previous escape color
+                        // todo: this only goes one color deep; should I have a stack here? does wotmud ever do that? is that a thing
+                        escapeColor = previousForegroundColor;
+                        justResetColor = true;
+                    }
+
+                    if (escapeColor != Color.Empty || MudColors.Dictionary.TryGetValue(escapeChar, out escapeColor)) {
                         if (foregroundColor != escapeColor) {
                             var str = sb.ToString();
                             if (string.IsNullOrWhiteSpace(str) && !replaceCurrentLine) {
@@ -93,6 +87,8 @@ namespace MudClient {
                                 }
                             }
                             sb.Clear();
+
+                            previousForegroundColor = foregroundColor;
                             foregroundColor = escapeColor;
                         }
                     } else {
@@ -108,11 +104,21 @@ namespace MudClient {
                 } else if (c == '\r') {
                     // carrige returns always have \x00 or a \n next to them so just ignore them
                 } else if (c == '\n') {
+                    previousForegroundColor = MudColors.ForegroundColor; // it looks like newlines probably reset the ANSI_RESET color
+                    // foregroundColor = MudColors.ForegroundColor; // todo: this seems to be necessary too, but it'll mean that if any colors take up multiple lines they wont work as expected
+
+                    if (justResetColor) {
+                        foregroundColor = MudColors.ForegroundColor;
+                        justResetColor = false;
+                    }
+
                     sb.Append('\n');
                 } else if (c == '\x07') {
                     output.Add(new FormattedOutput { Beep = true });
+                    justResetColor = false;
                 } else {
                     sb.Append(c);
+                    justResetColor = false;
                 }
             }
 

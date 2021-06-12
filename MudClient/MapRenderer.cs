@@ -11,100 +11,51 @@ using System.Windows.Forms;
 using static MudClient.RoomFinder;
 
 namespace MudClient {
-    public partial class MapWindow : Form {
-
-        private MapDataLoader _dataLoader;
-
-        public Dictionary<int, ZmudDbOjectTblRow> RoomsById { get; private set; }
-        public Dictionary<int, ZmudDbOjectTblRow[]> RoomsByZone { get; private set; }
-        public Dictionary<string, ZmudDbOjectTblRow[]> RoomsByName { get; private set; }
-        public Dictionary<string, ZmudDbOjectTblRow[]> RoomsByDescription { get; private set; }
-        public Dictionary<string, ZmudDbOjectTblRow[]> RoomsByFirstLineOfDescription { get; private set; }
-
-        public Dictionary<int, ZmudDbExitTblRow> ExitsById;
-        public Dictionary<int, ZmudDbExitTblRow[]> ExitsByFromRoom;
-        public Dictionary<int, ZmudDbExitTblRow[]> ExitsByToRoom;
-
-        private ZmudDbZoneTbl[] _zones;
-
+    public static class MapRenderer {
 
         private const int DefaultRoomSize = 6;
         private const double MaxScaling = 0.08;
         private const double MinScaling = 0.1;
 
-        public int CurrentRoomId { get; set; } = 0;
-        public int CurrentVirtualRoomId { get; set; } = -1;
-        public int CurrentSmartRoomId { get; set; } = -1;
 
-        private int _prevOffsetX = 0;
-        private int _prevOffsetY = 0;
-        private int _prevZoneId = -1;
+        private static int _prevOffsetX = 0;
+        private static int _prevOffsetY = 0;
+        private static int _prevZoneId = -1;
 
-        public bool DataLoaded = false;
-
-        public MapWindow() {
-            InitializeComponent();
-            LoadData();
-        }
-
-        public void LoadData() {
-            Task.Run(() => {
-
-                _dataLoader = new MapDataLoader();
-                _dataLoader.LoadData();
-
-                RoomsById = _dataLoader.Rooms.ToDictionary(room => room.ObjID.Value, room => room);
-                RoomsByZone = _dataLoader.Rooms.GroupBy(room => room.ZoneID.Value).ToDictionary(group => group.Key, group => group.ToArray());
-                RoomsByName = _dataLoader.Rooms.GroupBy(room => room.Name).ToDictionary(group => group.Key, group => group.ToArray());
-                RoomsByDescription = _dataLoader.Rooms.GroupBy(room => room.Desc).ToDictionary(group => group.Key, group => group.ToArray());
-                RoomsByFirstLineOfDescription = _dataLoader.Rooms.GroupBy(room => room.Desc.Split('\r', '\n').FirstOrDefault().Trim()).ToDictionary(group => group.Key, group => group.ToArray());
-
-                ExitsById = _dataLoader.Exits.ToDictionary(exit => exit.ExitID.Value, exit => exit);
-                ExitsByFromRoom = _dataLoader.Exits.GroupBy(exit => exit.FromID.Value).ToDictionary(group => group.Key, group => group.ToArray());
-                ExitsByToRoom = _dataLoader.Exits.GroupBy(exit => exit.ToID.Value).ToDictionary(group => group.Key, group => group.ToArray());
-
-                _zones = _dataLoader.Zones;
-
-                DataLoaded = true;
-                this.Invalidate();
-            });
-        }
-
-        // todo: tidy up all this scaling and offset stuff
-        private void OnPaint(object sender, PaintEventArgs e) {
-            if (!DataLoaded) {
+        public static void Render(PaintEventArgs e) {
+            if (!MapData.DataLoaded) {
                 return;
             }
 
             Graphics g = e.Graphics;
 
-            bool currentRoomExists = RoomsById.ContainsKey(CurrentRoomId);
-            bool currentVirtualRoomExists = RoomsById.ContainsKey(CurrentVirtualRoomId);
+            bool currentRoomExists = MapData.RoomsById.ContainsKey(MapData.CurrentRoomId);
+            bool currentVirtualRoomExists = MapData.RoomsById.ContainsKey(MapData.CurrentVirtualRoomId);
 
             ZmudDbOjectTblRow currentRoom = null;
             if (currentVirtualRoomExists) {
-                currentRoom = RoomsById[CurrentVirtualRoomId];
+                currentRoom = MapData.RoomsById[MapData.CurrentVirtualRoomId];
             } else if (currentRoomExists) {
-                CurrentVirtualRoomId = CurrentRoomId;
-                currentRoom = RoomsById[CurrentVirtualRoomId];
+                MapData.CurrentVirtualRoomId = MapData.CurrentRoomId;
+                currentRoom = MapData.RoomsById[MapData.CurrentVirtualRoomId];
             } else {
                 return;
             }
 
             var currentZoneId = currentRoom.ZoneID.Value;
 
-            var roomsInZone = RoomsByZone[currentZoneId];
+            var roomsInZone = MapData.RoomsByZone[currentZoneId];
 
             // todo: could cache this
             HashSet<int> exitsInZone = new HashSet<int>();
             foreach (var room in roomsInZone) {
-                if (ExitsByFromRoom.ContainsKey(room.ObjID.Value)) {
-                    foreach (var exit in ExitsByFromRoom[room.ObjID.Value]) {
+                if (MapData.ExitsByFromRoom.ContainsKey(room.ObjID.Value)) {
+                    foreach (var exit in MapData.ExitsByFromRoom[room.ObjID.Value]) {
                         exitsInZone.Add(exit.ExitID.Value);
                     }
                 }
-                if (ExitsByToRoom.ContainsKey(room.ObjID.Value)) {
-                    foreach (var exit in ExitsByToRoom[room.ObjID.Value]) {
+                if (MapData.ExitsByToRoom.ContainsKey(room.ObjID.Value)) {
+                    foreach (var exit in MapData.ExitsByToRoom[room.ObjID.Value]) {
                         exitsInZone.Add(exit.ExitID.Value);
                     }
                 }
@@ -200,14 +151,14 @@ namespace MudClient {
 
             HashSet<int> drawn = new HashSet<int>();
             foreach (var exitId in exitsInZone) {
-                var exit = ExitsById[exitId];
+                var exit = MapData.ExitsById[exitId];
                 // todo: I'm pretty sure lines are still drawn twice
                 if (drawn.Contains(exit.ExitID.Value)) {
                     continue;
                 }
 
-                bool hasFromRoom = RoomsById.TryGetValue(exit.FromID.Value, out var fromRoom);
-                bool hasToRoom = RoomsById.TryGetValue(exit.ToID.Value, out var toRoom);
+                bool hasFromRoom = MapData.RoomsById.TryGetValue(exit.FromID.Value, out var fromRoom);
+                bool hasToRoom = MapData.RoomsById.TryGetValue(exit.ToID.Value, out var toRoom);
                 hasToRoom = hasToRoom && toRoom.ZoneID.Value == currentZoneId;
                 hasFromRoom = hasFromRoom && fromRoom.ZoneID.Value == currentZoneId;
 
@@ -226,11 +177,11 @@ namespace MudClient {
 
                         if (exit.DirType.Value == (int)DirectionType.Up) {
                             // draw upwards facing triangle
-                            e.Graphics.FillPolygon(Brushes.Black, new[] { new Point(x1 - 6, y1 ), new Point(x1 - 2, y1 + 4), new Point(x1 - 10, y1 + 4) });
+                            e.Graphics.FillPolygon(Brushes.Black, new[] { new Point(x1 - 6, y1), new Point(x1 - 2, y1 + 4), new Point(x1 - 10, y1 + 4) });
 
                             // has a door
                             if (exit.ExitKindID.Value != 0) {
-                                e.Graphics.DrawRectangle(Pens.Black, x1 - 9, y1 , 6, 6);
+                                e.Graphics.DrawRectangle(Pens.Black, x1 - 9, y1, 6, 6);
                             }
                         }
                         if (exit.DirType.Value == (int)DirectionType.Down) {
@@ -248,7 +199,7 @@ namespace MudClient {
                         int deltaX1 = 0;
                         int deltaY1 = 0;
                         if (exit.DirType.Value == (int)DirectionType.North)
-                            deltaY1 = -4 - roomSize/2;
+                            deltaY1 = -4 - roomSize / 2;
                         if (exit.DirType.Value == (int)DirectionType.South)
                             deltaY1 = 4 + roomSize / 2;
                         if (exit.DirType.Value == (int)DirectionType.West)
@@ -297,17 +248,19 @@ namespace MudClient {
                         if (exit.ExitKindID.Value != 0) {
                             int doorDeltaX = 0;
                             int doorDeltaY = 0;
+
+                            // todo: this code looks highly questionable - why are there no brackets?
                             if (exit.DirType.Value == (int)DirectionType.North)
                                 doorDeltaX = -4;
-                                doorDeltaY = -4;
+                            doorDeltaY = -4;
                             if (exit.DirType.Value == (int)DirectionType.South)
                                 doorDeltaX = -4;
                             if (exit.DirType.Value == (int)DirectionType.West)
                                 doorDeltaY = -4;
-                                doorDeltaX = -4;
+                            doorDeltaX = -4;
                             if (exit.DirType.Value == (int)DirectionType.East)
                                 doorDeltaY = -4;
-                                doorDeltaX = -4;
+                            doorDeltaX = -4;
 
                             e.Graphics.DrawRectangle(Pens.Black, x1 + roomSize / 2 + deltaX1 + doorDeltaX, y1 + roomSize / 2 + deltaY1 + doorDeltaY, 8, 8);
                             // e.Graphics.FillRectangle(Brushes.Black, x1 + roomSize / 2 + deltaX1, y1 + roomSize / 2 + deltaY1, 8, 8);
@@ -328,12 +281,12 @@ namespace MudClient {
                 var color = Color.FromArgb((rgb >> 0) & 0xff, (rgb >> 8) & 0xff, (rgb >> 16) & 0xff);
                 Brush fillBrush = new SolidBrush(color);
                 // var fillBrush = Brushes.LightGray;
-                if (room.ObjID.Value == CurrentVirtualRoomId) {
-                    e.Graphics.DrawRectangle(Pens.Red, x-2, y-2, roomSize+4, roomSize+4); // draw a red hilight around the current spammed-to room
-                    e.Graphics.DrawRectangle(Pens.Red, x-3, y-3, roomSize+6, roomSize+6); // draw a red hilight around the current spammed-to room
+                if (room.ObjID.Value == MapData.CurrentVirtualRoomId) {
+                    e.Graphics.DrawRectangle(Pens.Red, x - 2, y - 2, roomSize + 4, roomSize + 4); // draw a red hilight around the current spammed-to room
+                    e.Graphics.DrawRectangle(Pens.Red, x - 3, y - 3, roomSize + 6, roomSize + 6); // draw a red hilight around the current spammed-to room
 
                     fillBrush = Brushes.Red;
-                    /*if (CurrentVirtualRoomId == CurrentRoomId) {
+                    /*if (mapWindow.CurrentVirtualRoomId == mapWindow.CurrentRoomId) {
                         fillBrush = Brushes.Purple;
                     } else {
                         fillBrush = Brushes.Green;
@@ -341,35 +294,64 @@ namespace MudClient {
                 }
 
                 e.Graphics.FillRectangle(fillBrush, x, y, roomSize, roomSize);
-                e.Graphics.DrawRectangle(Pens.Black, x, y, roomSize, roomSize);
+                e.Graphics.DrawRectangle(Pens.DarkGray, x, y, roomSize, roomSize);
 
-                if (room.ObjID.Value == CurrentRoomId) {
-                    e.Graphics.FillRectangle(Brushes.IndianRed, x+3, y+3, roomSize-5, roomSize-5);
+                if (room.ObjID.Value == MapData.CurrentRoomId) {
+                    e.Graphics.FillRectangle(Brushes.IndianRed, x + 3, y + 3, roomSize - 5, roomSize - 5);
                 }
 
                 /*if (room.ObjID.Value == CurrentSmartRoomId) {
                     e.Graphics.FillRectangle(Brushes.HotPink, x+2, y+2, roomSize-4, roomSize-4);
                 }*/
 
+                // draw room label
                 if (!string.IsNullOrEmpty(room.IDName)) {
-                    var font = new Font(SystemFonts.DefaultFont.FontFamily, 10, FontStyle.Regular);
-                    e.Graphics.DrawString(room.IDName, font, Brushes.Black, x + 4, y - 7);
+                    var font = new Font(SystemFonts.DefaultFont.FontFamily, 9, FontStyle.Regular);
+
+                    var stringSize = e.Graphics.MeasureString(room.IDName, font);
+                    var X = stringSize.Width;
+                    var Y = stringSize.Height;
+
+                    switch ((DirectionType)(room.LabelDir ?? (int)DirectionType.Other)) {
+                        case DirectionType.Center:
+                            e.Graphics.DrawString(room.IDName, font, Brushes.Black, x-1, y - 2);
+                            break;
+                        case DirectionType.North:
+                            e.Graphics.DrawString(room.IDName, font, Brushes.Black, x - stringSize.Width/2,y - stringSize.Height - 8);
+                            break;
+                        case DirectionType.South:
+                            e.Graphics.DrawString(room.IDName, font, Brushes.Black, x - stringSize.Width/2, y + 10);
+                            break;
+                        case DirectionType.East:
+                            e.Graphics.DrawString(room.IDName, font, Brushes.Black, x + 10, y - 2);
+                            break;
+                        case DirectionType.West:
+                            e.Graphics.DrawString(room.IDName, font, Brushes.Black, x - stringSize.Width - 12, y - 2);
+                            break;
+                        case DirectionType.NE:
+                            e.Graphics.DrawString(room.IDName, font, Brushes.Black, x + 8 ,y - stringSize.Height - 8);
+                            break;
+                        case DirectionType.NW:
+                            e.Graphics.DrawString(room.IDName, font, Brushes.Black, x - stringSize.Width,y - stringSize.Height - 8);
+                            break;
+                        case DirectionType.SE:
+                            e.Graphics.DrawString(room.IDName, font, Brushes.Black, x + 8, y + 10);
+                            break;
+                        case DirectionType.SW:
+                            e.Graphics.DrawString(room.IDName, font, Brushes.Black, x - stringSize.Width, y + 10);
+                            break;
+                        case DirectionType.None:
+                            break;
+                        default:
+                            e.Graphics.DrawString(room.IDName, font, Brushes.Black, x + 4, y - 7);
+                            break;
+                    }
+
                 }
 
                 // var font = new Font(SystemFonts.DefaultFont.FontFamily, 5, FontStyle.Regular);
                 // e.Graphics.DrawString(room.ObjID.Value.ToString(), font, Brushes.Black, (float)x + 4, (float)y - 7);
             }
-
         }
-
-        private void OnResizeEnd(object sender, EventArgs e) {
-            ((Control)sender).Invalidate();
-        }
-
-        private void MapWindow_SizeChanged(object sender, EventArgs e) {
-            ((Control)sender).Invalidate();
-        }
-
-
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Drawing;
+using System.Windows.Forms;
 
 namespace MudClient.Management {
 	partial class MudClientForm {
@@ -82,13 +83,6 @@ namespace MudClient.Management {
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
-            // 
-            // hotKeysToolStripMenuItem
-            // 
-            this.hotKeysToolStripMenuItem.Name = "hotKeysToolStripMenuItem";
-            this.hotKeysToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
-            this.hotKeysToolStripMenuItem.Text = "HotKeys";
-            this.hotKeysToolStripMenuItem.Click += new System.EventHandler(this.hotKeysToolStripMenuItem_Click);
             // 
             // devWindowToolStripMenuItem
             // 
@@ -175,19 +169,20 @@ namespace MudClient.Management {
             // 
             this.toolStripStatusLabel.Name = "toolStripStatusLabel";
             this.toolStripStatusLabel.Size = new System.Drawing.Size(82, 17);
-            this.toolStripStatusLabel.Text = "Disconnected.";
+            this.toolStripStatusLabel.Text = "";
             // 
             // MudClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 1001);
+            this.ClientSize = new System.Drawing.Size(750, 850);
             this.Controls.Add(this.controlPanel);
             this.Controls.Add(this.menuStrip);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip;
             this.Name = "MudClientForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
+            this.Location = new Point(0, 0);
             this.Text = "C# Mud Client";
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
