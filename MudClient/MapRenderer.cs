@@ -22,6 +22,8 @@ namespace MudClient {
         private static int _prevOffsetY = 0;
         private static int _prevZoneId = -1;
 
+        private static SolidBrush _backgroundBrush = new SolidBrush(Color.FromArgb(60,60,60));
+
         public static void Render(PaintEventArgs e) {
             if (!MapData.DataLoaded) {
                 return;
@@ -147,6 +149,8 @@ namespace MudClient {
             _prevZoneId = currentZoneId;
             _prevOffsetX = offsetX;
             _prevOffsetY = offsetY;
+
+            g.FillRectangle(_backgroundBrush, 0, 0, screenWidth, screenHeight);
 
 
             HashSet<int> drawn = new HashSet<int>();

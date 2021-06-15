@@ -1,6 +1,7 @@
 ﻿using MudClient.Common.Extensions;
 using MudClient.Core.Common;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
@@ -26,6 +27,12 @@ namespace MudClient.Management
         {
             base.OnShown(e);
 			_shown = true;
+		}
+
+		public void WriteToOutput(List<FormattedOutput> outputs) {
+			if (_shown) {
+				richTextBox.WriteToTextBox(outputs);
+			}
 		}
 
 		public void WriteToOutput(string message, Color textColor) {

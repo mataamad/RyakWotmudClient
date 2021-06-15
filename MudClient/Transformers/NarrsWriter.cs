@@ -32,7 +32,7 @@ namespace MudClient {
 
 
                             // todo: decoding & then converting to rich text will be needlessly wasteful
-                            _form.WriteToNarrs(FormatEncodedText.Format(ControlCharacterEncoder.Decode(line + "\n")));
+                            _form.WriteToNarrs(FormatDecodedText.Format(ControlCharacterEncoder.Decode(line + "\n")));
                         }
                     }
                 }

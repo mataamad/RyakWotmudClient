@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Windows.Forms;
 
 namespace MudClient.Common.Extensions {
@@ -29,5 +31,39 @@ namespace MudClient.Common.Extensions {
                 richTextBox.SelectedText = message;
             }
         }
+
+        public static void WriteToTextBox(this RichTextBox target, List<FormattedOutput> outputs) {
+
+            if (!outputs.Any()) {
+                return;
+            }
+
+            Action WriteText = () => {
+                foreach (var output in outputs) {
+                    // Debug.Write(output.Text);
+                    // richTextBox.AppendFormattedText("X" + output.Text, output.TextColor);
+
+                    if (output.Beep) {
+                        SystemSounds.Beep.Play();
+                        continue;
+                    }
+
+                    if (output.ReplaceCurrentLine) {
+                        // richTextBox.ClearCurrentLine();
+                        target.ReplaceCurrentLine(output.Text, output.TextColor);
+                        // richTextBox.AppendFormattedText("X" + output.Text + "Y", output.TextColor);
+                    } else {
+                        target.AppendFormattedText(output.Text, output.TextColor);
+                    }
+                }
+            };
+
+            if (target.InvokeRequired) {
+                target.Invoke(WriteText);
+            } else {
+                WriteText();
+            }
+        }
+
     }
 }

@@ -8,9 +8,34 @@ namespace MudClient {
         Status
     }
 
+    public enum LineMetadataType {
+        None,
+        Attack,
+        Communication,
+        TheyArentHere,
+        YouDoTheBestYouCan,
+        Ok,
+        YouFlee,
+        TheFightingIsTooHeavyForYoutToEnterTheFray,
+        YouCannotGoThatWay,
+        YouAreFightingForYourLife,
+        YouFeelLessPanicked,
+        YouAreStanding,
+        Arglebargle,
+        BashWho,
+        TheyAlreadySeemToBeStunned,
+        YouStartPayingIncreasedAttentionToYourSurroundings,
+        YouCouldntEscape,
+    }
+
+    public class LineMetadata {
+        public LineMetadataType Type { get; set; } = LineMetadataType.None;
+    }
+
     public class ParsedOutput {
         public ParsedOutputType Type { get; set; } = ParsedOutputType.Raw;
         public string[] Lines { get; set; } = new string[0];
+        public LineMetadata[] LineMetadata = new LineMetadata[0];
 
         // todo: only used by room
         public string Title = "";

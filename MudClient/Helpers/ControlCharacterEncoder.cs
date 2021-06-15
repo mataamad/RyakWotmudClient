@@ -35,14 +35,23 @@ namespace MudClient {
             var lines = new List<string>();
 
             var sb = new StringBuilder();
-            foreach (char c in s) {
+            int i = 0;
+            while (i < s.Length) {
+                char c = s[i];
                 if (Char.IsControl(c) || (c > 127 && c < 256)) {
+                    // need to split on \r\n, \n\r, \n, and \r, but still want to allow two empty lines of output in a row
                     if (c == '\r') {
-                        // split
                         lines.Add(sb.ToString());
                         sb.Clear();
+                        if (i + 1 < s.Length && s[i + 1] == '\n') {
+                            i++;
+                        }
                     } else if (c == '\n') {
-                        // skip
+                        lines.Add(sb.ToString());
+                        sb.Clear();
+                        if (i + 1 < s.Length && s[i + 1] == '\r') {
+                            i++;
+                        }
                     } else {
                         // encode control characters as e.g. \x1A
                         sb.Append($"\\x{(byte)c:X2}");
@@ -52,7 +61,10 @@ namespace MudClient {
                 } else {
                     sb.Append(c);
                 }
+
+                i++;
             }
+
             if (sb.Length > 0) {
                 lines.Add(sb.ToString());
             }
@@ -90,9 +102,17 @@ namespace MudClient {
                             char numberChar2 = e.Current;
 
                             string numberString = new string(new[] { numberChar1, numberChar2 });
-                            char decodedChar = (char)int.Parse(numberString, System.Globalization.NumberStyles.HexNumber);
+                            int parsed;
+                            if (int.TryParse(numberString, System.Globalization.NumberStyles.HexNumber, provider: null, out parsed)) {
+                                char decodedChar = (char)parsed;
+                                sb.Append(decodedChar);
+                            } else {
+                                sb.Append(c);
+                                sb.Append(next);
+                                sb.Append(numberChar1);
+                                continue;
+                            }
 
-                            sb.Append(decodedChar);
                         } else if (next == 'r') {
                             sb.Append('\r');
                         } else if (next == 'n') {

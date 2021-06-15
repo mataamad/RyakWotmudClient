@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MudClient {
@@ -10,7 +11,7 @@ namespace MudClient {
         public Dictionary<string, AliasRow> Dictionary { get; private set; } = null;
 
         public HashSet<string> SpecialAliasesDictionary { get; private set; } = new HashSet<string> {
-            "qf",
+            "qf", "mv",
 
             "o", "c", "cll", "opp", "unl", "loc", "pic", // fast open
             // "oi", "cd", // open/close seen door (e.g bump into a door, saves here)

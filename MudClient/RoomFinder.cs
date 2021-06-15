@@ -98,8 +98,28 @@ namespace MudClient {
             });
 
             Store.ComplexAlias.Subscribe((output) => {
-                if (output.Trim().ToLower() == "qf") {
+                var cleaned = output.Trim().ToLower();
+                if (cleaned == "qf") {
                     QuickFind();
+                }
+                if (cleaned.StartsWith("mv ") && cleaned.Length > 3) {
+                    var match = Regex.Match(cleaned, @"^mv ((?<count>\d*)?(?<direction>n|e|s|w|u|d))+$");
+                    var counts = match.Groups["count"].Captures;
+                    var directions = match.Groups["direction"].Captures;
+                    for (int i = 0; i < counts.Count; i++) {
+
+                        int count = 1;
+                        var countString = counts[i].Value;
+                        if (countString.Length > 0) {
+                            count = int.Parse(countString);
+                        }
+                        var direction = directions[i].Value;
+
+                        for (int j = 0; j < count; j++) {
+                            MoveVirtualRoom(direction);
+                            FindSmartRoomId();
+                        }
+                    }
                 }
             });
         }

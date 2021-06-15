@@ -29,9 +29,20 @@ namespace MudClient {
                         case ParsedOutputType.Raw:
                             // todo: dont unsplit things, dont decode things ~ waste of time & effort
                             // probably copy paste a custom version of .FormatOutput
-                            var formattedOutput = FormatEncodedText.Format(ControlCharacterEncoder.Decode(string.Join("\n", p.Lines) + "\n"));
+
+                            /*var lines = p.Lines;
+                            for (int i = 0; i < p.Lines.Length; i++) {
+                                if (!string.IsNullOrWhiteSpace(p.Lines[i])) {
+                                    lines[i] = p.LineMetadata[i].Type.ToString().PadRight(15)[..15] + " " + p.Lines[i];
+                                }
+                            }*/
+
+                            var formattedOutput = FormatDecodedText.Format(ControlCharacterEncoder.Decode(string.Join("\n", p.Lines) + "\n"));
                             form.WriteToOutput(formattedOutput);
 
+                            if (!form.ContainsFocus) {
+                                WindowFlasher.Flash(form);
+                            }
                             break;
                         case ParsedOutputType.Room:
                             // todo: there's a break between rooms even if it was a dline
@@ -46,8 +57,8 @@ namespace MudClient {
                                 form.WriteToOutput(string.Join("\n", p.Items) + "\n", MudColors.ItemsOnFloor);
                             }
                             if (p.Creatures.Length > 0) {
-                                // Todo: parse ANSI colors in here
-                                form.WriteToOutput(string.Join("\n", p.Creatures) + "\n", MudColors.CreaturesInRoom);
+                                // Todo: does this work correctly? also it's inefficient
+                                form.WriteToOutput(FormatDecodedText.Format(ControlCharacterEncoder.Decode("\\x1B[33m" + string.Join("\n", p.Creatures) + "\n")));
                             }
 
                             break;

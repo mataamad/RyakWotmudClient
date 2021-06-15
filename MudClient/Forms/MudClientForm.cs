@@ -27,7 +27,7 @@ namespace MudClient.Management {
 
         private readonly Aliases _aliases = new Aliases();
 
-        private bool _isShown = false;
+        public bool IsShown = false;
 
         public DevViewForm DevViewForm { get; private set; }
         public StatusForm StatusForm { get; private set; }
@@ -58,7 +58,7 @@ namespace MudClient.Management {
 
             this.textBox.Focus();
 
-            this._isShown = true;
+            this.IsShown = true;
         }
 
         protected override void OnKeyDown(KeyEventArgs e) {
@@ -199,7 +199,7 @@ namespace MudClient.Management {
 
         public void WriteToOutput(string message, Color textColor)
         {
-            if (!_isShown) {
+            if (!IsShown) {
                 return;
             }
 
@@ -216,48 +216,18 @@ namespace MudClient.Management {
         }
 
         public void WriteToOutput(List<FormattedOutput> outputs) {
-            WriteToTextBox(richTextBox, outputs);
-        }
-
-        public void WriteToTextBox(RichTextBox target, List<FormattedOutput> outputs) {
-            if (!_isShown) {
-                return;
-            }
-
-            if (!outputs.Any()) {
-                return;
-            }
-
-            Action WriteText = () => {
-                foreach (var output in outputs) {
-                    // Debug.Write(output.Text);
-                    // richTextBox.AppendFormattedText("X" + output.Text, output.TextColor);
-
-                    if (output.Beep) {
-                        SystemSounds.Beep.Play();
-                        continue;
-                    }
-
-                    if (output.ReplaceCurrentLine) {
-                        // richTextBox.ClearCurrentLine();
-                        target.ReplaceCurrentLine(output.Text, output.TextColor);
-                        // richTextBox.AppendFormattedText("X" + output.Text + "Y", output.TextColor);
-                    } else {
-                        target.AppendFormattedText(output.Text, output.TextColor);
-                    }
-                }
-            };
-
-            if (target.InvokeRequired) {
-                target.Invoke(WriteText);
-            } else {
-                WriteText();
+            if (IsShown) {
+                richTextBox.WriteToTextBox(outputs);
             }
         }
+
+
 
 
         public void WriteToNarrs(List<FormattedOutput> outputs) {
-            WriteToTextBox(narrsRichTextBox,outputs);
+            if (IsShown) {
+                narrsRichTextBox.WriteToTextBox(outputs);
+            }
         }
 
 		private void connectionClient_Connected(object sender) {

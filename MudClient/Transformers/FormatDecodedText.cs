@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace MudClient {
-    public static class FormatEncodedText {
+    public static class FormatDecodedText {
 
 
         // colours text based on the ansi escape sequences

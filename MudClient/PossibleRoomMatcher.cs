@@ -29,6 +29,7 @@ namespace MudClient {
             ZmudDbOjectTblRow[] possibleRooms = null;
 
         
+            // todo: should probably completely strip newlines from RoomsByDescription rather than doing this
             if (MapData.RoomsByDescription.TryGetValue(room.Description.Replace("\n", "\r\n"), out ZmudDbOjectTblRow[] roomsWithSameDescription)) {
                 possibleRooms = roomsWithSameDescription.Intersect(possibleRoomsByName).ToArray();
             } else {
