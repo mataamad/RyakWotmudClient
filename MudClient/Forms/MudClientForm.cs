@@ -243,7 +243,9 @@ namespace MudClient.Management {
 		}
 
         private void hotKeysDevWindowStripMenuItem_Click(object sender, EventArgs e) {
-            DevViewForm.Show(this);
+            if (!DevViewForm.Visible) {
+                DevViewForm.Show(this);
+            }
         }
 
         private void textBox_Click(object sender, EventArgs e) {

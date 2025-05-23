@@ -63,7 +63,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 900);
             this.Controls.Add(this.controlPanel);
-            this.Location = new System.Drawing.Point(1920, 0);
+            this.Location = new System.Drawing.Point(2560, 1440-1080);
             this.Name = "DevViewForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "C# Mud Client Dev View";
