@@ -3,6 +3,7 @@ using MudClient.Common.Extensions;
 using MudClient.Core.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -29,8 +30,11 @@ namespace MudClient.Management {
 
         public bool IsShown = false;
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public DevViewForm DevViewForm { get; private set; }
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public StatusForm StatusForm { get; private set; }
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MapWindow MapWindow { get; private set; }
 
 		public MudClientForm(
@@ -220,8 +224,6 @@ namespace MudClient.Management {
                 richTextBox.WriteToTextBox(outputs);
             }
         }
-
-
 
 
         public void WriteToNarrs(List<FormattedOutput> outputs) {

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    "net5.0-windows7.0": {
+    "net9.0-windows7.0": {
       "Dapper/1.50.4": {
         "type": "package",
         "dependencies": {
@@ -7196,7 +7196,7 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net5.0-windows7.0": [
+    "net9.0-windows7.0": [
       "Dapper >= 1.50.4",
       "MSTest.TestFramework >= 2.2.4",
       "Microsoft.CSharp >= 4.7.0",
@@ -7230,15 +7230,15 @@
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
-        "net5.0-windows"
+        "net9.0-windows7.0"
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net5.0-windows7.0": {
-          "targetAlias": "net5.0-windows",
+        "net9.0-windows7.0": {
+          "targetAlias": "net9.0-windows7.0",
           "projectReferences": {}
         }
       },
@@ -7255,8 +7255,8 @@
       "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
-      "net5.0-windows7.0": {
-        "targetAlias": "net5.0-windows",
+      "net9.0-windows7.0": {
+        "targetAlias": "net9.0-windows7.0",
         "dependencies": {
           "Dapper": {
             "target": "Package",
@@ -7314,7 +7314,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
       }
     }
   },
@@ -7326,7 +7326,7 @@
       "message": "Package 'Newtonsoft.Json' 10.0.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
       "libraryId": "Newtonsoft.Json",
       "targetGraphs": [
-        "net5.0-windows7.0"
+        "net9.0-windows7.0"
       ]
     }
   ]
