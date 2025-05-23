@@ -34,9 +34,12 @@ using System.Threading.Tasks;
     fix output formatter to not be inefficient
     profile the app when loading a log from file
 
+    had some issues with the map not following shian for a bit - either the map was taking ages load or maybe autoscan was messing it up (or day/night for a human?)
+
     easy things:
         view room details somehow (either when manual 'look' command, or when type a specific command)
         make track directions stand out & player leave directions
+        highlight unridden horses in rooms (?)
         add a command to mark a specific part of a log for review later
         'mv rk', 'mv blight' etc.
         autospam scripts
@@ -52,9 +55,7 @@ using System.Threading.Tasks;
 
 namespace MudClient {
     public class Program {
-
-        public const bool EnableStabAliases = false;
-        // public const bool EnableStabAliases = false;
+        public static bool EnableStabAliases = false;
 
         public const bool ReadFromLogFile = false;
         // public const bool ReadFromLogFile = false;

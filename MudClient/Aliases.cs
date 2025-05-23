@@ -28,6 +28,8 @@ namespace MudClient {
             "sc",
             "og", "ogk",
 
+            "b",
+            "#setstab"
         };
 
         public class AliasRow {
@@ -41,9 +43,6 @@ namespace MudClient {
         private int _lastLine = 0;
 
         public Aliases() {
-            if (Program.EnableStabAliases) {
-                SpecialAliasesDictionary.Add("b");
-            }
         }
 
         public void LoadAliases() {

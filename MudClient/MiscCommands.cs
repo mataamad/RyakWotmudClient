@@ -86,14 +86,20 @@ namespace MudClient {
                     break;
                 case "b":
                     if (!Program.EnableStabAliases) {
-                        throw new InvalidOperationException();
-                    }
-                    if (!string.IsNullOrEmpty(restOfMessage)) {
-                        await Store.TcpSend.SendAsync($"backstab {restOfMessage}");
+                        await Store.TcpSend.SendAsync($"bash {restOfMessage}");
                     } else {
-                        await Store.TcpSend.SendAsync($"backstab h.{_enemyRace}");
+                        if (!string.IsNullOrEmpty(restOfMessage)) {
+                            await Store.TcpSend.SendAsync($"backstab {restOfMessage}");
+                        } else {
+                            await Store.TcpSend.SendAsync($"backstab h.{_enemyRace}");
+                        }
                     }
                     break;
+                case "#setstab":
+                    var enable = restOfMessage == "1" || restOfMessage.ToLower() == "true";
+                    await Store.ClientInfo.SendAsync($"enable stab aliases: {enable}");
+                    Program.EnableStabAliases = enable;
+                break;
             }
         }
 
