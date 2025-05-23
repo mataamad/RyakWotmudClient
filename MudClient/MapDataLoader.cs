@@ -44,7 +44,8 @@ namespace MudClient {
         }
 
         // private const string ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=""Mud DB Dump"";Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-        private const string ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=""ZmudDump2021"";Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        // private const string ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=""ZmudDump2021"";Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        private const string ConnectionString = @"Data Source=(local);Initial Catalog=""ZmudDump2021"";Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         private void LoadFromDb() {
             using (var connection = new SqlConnection(ConnectionString)) {
                 connection.Open();
