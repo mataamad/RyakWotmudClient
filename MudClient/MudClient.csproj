@@ -20,14 +20,15 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="1.50.4" />
+    <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.TestPlatform" Version="16.10.0" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.4" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+    <PackageReference Include="Microsoft.TestPlatform" Version="17.14.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.9.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
+    <PackageReference Include="System.Reactive" Version="6.0.1" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="8.1.2" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="9.0.5" />
   </ItemGroup>
 </Project>

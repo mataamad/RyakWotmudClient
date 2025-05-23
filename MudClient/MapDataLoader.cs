@@ -1,8 +1,8 @@
 ﻿using Dapper;
+using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;

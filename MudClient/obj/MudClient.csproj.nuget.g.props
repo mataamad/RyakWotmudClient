@@ -13,8 +13,11 @@
     <SourceRoot Include="C:\Users\Work\.nuget\packages\" />
     <SourceRoot Include="C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages\" />
   </ItemGroup>
+  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Import Project="$(NuGetPackageRoot)mstest.analyzers\3.9.0\buildTransitive\MSTest.Analyzers.props" Condition="Exists('$(NuGetPackageRoot)mstest.analyzers\3.9.0\buildTransitive\MSTest.Analyzers.props')" />
+  </ImportGroup>
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <PkgNewtonsoft_Json Condition=" '$(PkgNewtonsoft_Json)' == '' ">C:\Users\Work\.nuget\packages\newtonsoft.json\10.0.3</PkgNewtonsoft_Json>
-    <PkgMicrosoft_TestPlatform Condition=" '$(PkgMicrosoft_TestPlatform)' == '' ">C:\Users\Work\.nuget\packages\microsoft.testplatform\16.10.0</PkgMicrosoft_TestPlatform>
+    <PkgMSTest_Analyzers Condition=" '$(PkgMSTest_Analyzers)' == '' ">C:\Users\Work\.nuget\packages\mstest.analyzers\3.9.0</PkgMSTest_Analyzers>
+    <PkgMicrosoft_TestPlatform Condition=" '$(PkgMicrosoft_TestPlatform)' == '' ">C:\Users\Work\.nuget\packages\microsoft.testplatform\17.14.0</PkgMicrosoft_TestPlatform>
   </PropertyGroup>
 </Project>
