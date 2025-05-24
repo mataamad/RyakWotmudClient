@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace MudClient {
     internal class DoorsCommands {
         private readonly MapWindow _map;
-        internal static readonly HashSet<string> directions = new() { "n", "e", "s", "w", "u", "d" };
+        internal static readonly HashSet<string> directions = ["n", "e", "s", "w", "u", "d"];
 
         internal DoorsCommands(MapWindow mapWindow) {
             _map = mapWindow;

@@ -8,16 +8,15 @@ using System.Threading.Tasks.Dataflow;
 
 namespace MudClient.Tests {
     [TestClass]
-    // todo: need to actually test something in here...
-    internal class SmokeTests {
+    public class SmokeTests {
         [TestMethod]
-        internal async Task TestBash() {
+        public async Task TestBash() {
             string simpleBashLog = @"./test_only_bash.csv";
             var response = await RunTest(simpleBashLog);
         }
 
         [TestMethod]
-        internal async Task TestLongerLog() {
+        public async Task TestLongerLog() {
             var response = await RunTest("./Log_2017-11-27 17-34-35.csv");
         }
 

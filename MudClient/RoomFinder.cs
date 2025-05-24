@@ -125,10 +125,11 @@ namespace MudClient {
             });
         }
 
+        private static readonly HashSet<string> directions = ["n", "s", "e", "w", "u", "d"];
         internal void ProcessSentMessage(string output) {
             // process the command the player entered
             output = output.Trim().ToLower();
-            if (new[] { "n", "s", "e", "w", "u", "d" }.Contains(output)) {
+            if (directions.Contains(output)) {
                 MoveVirtualRoom(output);
                 Movements.Add(new Movement {
                     Direction = output,
