@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,14 +28,9 @@ namespace MudClient {
         public void LoadData() {
             LoadFromDb(); // loading from DB because it's a lot faster - use json if it's all you have access to
 
-            /*var serializer = new JsonSerializer();
-            using (var file = File.OpenRead(MapFilename))
-            using (var gZipStream = new GZipStream(file, CompressionMode.Decompress, leaveOpen: true))
-            using (var streamReader = new StreamReader(gZipStream))
-            using (var jsonTextReader = new JsonTextReader(streamReader)) {
-               // var data2 = streamReader.ReadToEnd();
-               // var data3 = serializer.Deserialize(jsonTextReader);
-               var data = serializer.Deserialize<DeserializeObject>(jsonTextReader);
+            /*using (var file = File.OpenRead(MapFilename))
+            using (var gZipStream = new GZipStream(file, CompressionMode.Decompress, leaveOpen: true)) {
+                var data = System.Text.Json.JsonSerializer.Deserialize<DeserializeObject>(gZipStream);
                 Rooms = data.Rooms;
                 Exits = data.Exits;
                 Zones = data.Zones;
@@ -61,15 +55,12 @@ namespace MudClient {
 
         // unused
         private void JsonGZipMap() {
-            using (var memoryStream = new MemoryStream())
-            using (var file = File.OpenWrite(MapFilename))
-            using (var gZipStream = new GZipStream(file, CompressionMode.Compress, leaveOpen: true)) {
-                var json = JsonConvert.SerializeObject(this);
-                var serializer = new JsonSerializer();
+            using var file = File.OpenWrite(MapFilename);
+            using var gZipStream = new GZipStream(file, CompressionMode.Compress, leaveOpen: true);
 
-                var bytes = Encoding.ASCII.GetBytes(json);
-                gZipStream.Write(bytes, 0, bytes.Length);
-            }
+            var json = System.Text.Json.JsonSerializer.Serialize(this);
+            var bytes = Encoding.UTF8.GetBytes(json);
+            gZipStream.Write(bytes, 0, bytes.Length);
         }
 
 

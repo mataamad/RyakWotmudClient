@@ -25,7 +25,6 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
     <PackageReference Include="Microsoft.TestPlatform" Version="17.14.0" />
     <PackageReference Include="MSTest.TestFramework" Version="3.9.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Reactive" Version="6.0.1" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="8.1.2" />

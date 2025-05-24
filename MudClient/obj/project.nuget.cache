@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "uhlO4R9DjjE=",
+  "dgSpecHash": "5yiw1OD93JA=",
   "success": true,
   "projectFilePath": "C:\\src\\CSMudClient-master\\MudClient\\MudClient.csproj",
   "expectedPackageFiles": [
@@ -31,7 +31,6 @@
     "C:\\Users\\Work\\.nuget\\packages\\microsoft.testplatform\\17.14.0\\microsoft.testplatform.17.14.0.nupkg.sha512",
     "C:\\Users\\Work\\.nuget\\packages\\mstest.analyzers\\3.9.0\\mstest.analyzers.3.9.0.nupkg.sha512",
     "C:\\Users\\Work\\.nuget\\packages\\mstest.testframework\\3.9.0\\mstest.testframework.3.9.0.nupkg.sha512",
-    "C:\\Users\\Work\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\Work\\.nuget\\packages\\system.clientmodel\\1.0.0\\system.clientmodel.1.0.0.nupkg.sha512",
     "C:\\Users\\Work\\.nuget\\packages\\system.configuration.configurationmanager\\9.0.4\\system.configuration.configurationmanager.9.0.4.nupkg.sha512",
     "C:\\Users\\Work\\.nuget\\packages\\system.data.datasetextensions\\4.5.0\\system.data.datasetextensions.4.5.0.nupkg.sha512",
