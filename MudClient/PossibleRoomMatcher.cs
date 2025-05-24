@@ -85,22 +85,15 @@ namespace MudClient {
         }
 
         private static string DirectionTypeToExitString(DirectionType direction) {
-            switch (direction) {
-                case DirectionType.Up:
-                    return "U";
-                case DirectionType.Down:
-                    return "D";
-                case DirectionType.North:
-                    return "N";
-                case DirectionType.South:
-                    return "S";
-                case DirectionType.East:
-                    return "E";
-                case DirectionType.West:
-                    return "W";
-                default:
-                    throw new Exception();
-            }
+            return direction switch {
+                DirectionType.Up => "U",
+                DirectionType.Down => "D",
+                DirectionType.North => "N",
+                DirectionType.South => "S",
+                DirectionType.East => "E",
+                DirectionType.West => "W",
+                _ => throw new Exception(),
+            };
         }
     }
 }

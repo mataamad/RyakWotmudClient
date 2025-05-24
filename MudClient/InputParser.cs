@@ -22,7 +22,7 @@ namespace MudClient {
         private readonly CancellationToken _cancellationToken;
 
 
-        internal InputParser(CancellationToken cancellationToken, ConnectionClientProducer connectionClientProducer) {
+        internal InputParser(ConnectionClientProducer connectionClientProducer, CancellationToken cancellationToken) {
             _cancellationToken = cancellationToken;
             _connectionClientProducer = connectionClientProducer;
             _aliases.LoadAliases();

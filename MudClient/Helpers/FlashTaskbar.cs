@@ -35,22 +35,23 @@ internal enum FlashType {
 internal static class WindowFlasher {
 
     [DllImport("user32.dll")]
-    private static extern int FlashWindowEx(ref FLASHWINFO pwfi);
+    static private extern int FlashWindowEx(ref FLASHWINFO pwfi);
 
     internal static void Flash(MudClientForm window) {
         if (!window.IsShown) {
             return;
         }
 
-        Action Flash = () => {
-            FLASHWINFO fw = new FLASHWINFO();
-            fw.cbSize = Convert.ToUInt32(Marshal.SizeOf(typeof(FLASHWINFO)));
-            fw.hwnd = window.Handle;
-            fw.dwFlags = (int)(FlashType.FLASHW_TRAY | FlashType.FLASHW_TIMERNOFG);
-            fw.uCount = UInt32.MaxValue;
+        void Flash() {
+            var fw = new FLASHWINFO {
+                cbSize = Convert.ToUInt32(Marshal.SizeOf(typeof(FLASHWINFO))),
+                hwnd = window.Handle,
+                dwFlags = (int)(FlashType.FLASHW_TRAY | FlashType.FLASHW_TIMERNOFG),
+                uCount = UInt32.MaxValue
+            };
 
             FlashWindowEx(ref fw);
-        };
+        }
 
         window.Invoke(Flash);
     }

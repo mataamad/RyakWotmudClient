@@ -312,7 +312,7 @@ namespace MudClient {
                 unprocessedRooms = SeenRooms.Skip(CurrentRoomIndex + 1).ToList();
             }
 
-            CurrentMovement += unprocessedRooms.Count();
+            CurrentMovement += unprocessedRooms.Count;
             CurrentRoomIndex = SeenRooms.Count - 1;
             currentRoom = SeenRooms.Last();
 
@@ -496,22 +496,15 @@ namespace MudClient {
 
 
         private DirectionType DirectionToDirectionType(string direction) {
-            switch (direction) {
-                case "u":
-                    return DirectionType.Up;
-                case "d":
-                    return DirectionType.Down;
-                case "n":
-                    return DirectionType.North;
-                case "s":
-                    return DirectionType.South;
-                case "e":
-                    return DirectionType.East;
-                case "w":
-                    return DirectionType.West;
-                default:
-                    throw new Exception();
-            }
+            return direction switch {
+                "u" => DirectionType.Up,
+                "d" => DirectionType.Down,
+                "n" => DirectionType.North,
+                "s" => DirectionType.South,
+                "e" => DirectionType.East,
+                "w" => DirectionType.West,
+                _ => throw new Exception(),
+            };
         }
     }
 }

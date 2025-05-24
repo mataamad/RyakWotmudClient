@@ -91,7 +91,7 @@ namespace MudClient {
                 csvWriter = new CsvLogFileWriter();
             }
 
-            var inputParser = new InputParser(cts.Token, connectionClientProducer);
+            var inputParser = new InputParser(connectionClientProducer, cts.Token);
 
             using (var form = new MudClientForm(inputParser)) {
                 var parsedOutputWriter = new ParsedOutputWriter(form);
