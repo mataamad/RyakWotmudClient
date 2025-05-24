@@ -4,8 +4,8 @@ using System.Linq;
 using static MudClient.RoomFinder;
 
 namespace MudClient {
-    public class PossibleRoom {
-        public ZmudDbOjectTblRow RoomData;
+    internal class PossibleRoom {
+        internal ZmudDbOjectTblRow RoomData;
     }
 
     class PossibleRoomMatcher {
@@ -13,7 +13,7 @@ namespace MudClient {
         // If no rooms are returned, then no match was found
         // If one room is returned then it is likely to be the correct room
         // If multiple rooms are returned then it could be any of these rooms and other methods should be used to determine the exact room (e.g. pick the only one adjacent to the last room)
-        public static List<PossibleRoom> FindPossibleRooms(Room room) {
+        internal static List<PossibleRoom> FindPossibleRooms(Room room) {
             // for testing purposes I'm just jumping to the first room with the same room name
             ZmudDbOjectTblRow[] possibleRoomsByName = null;
             MapData.RoomsByName.TryGetValue(room.Name, out possibleRoomsByName);

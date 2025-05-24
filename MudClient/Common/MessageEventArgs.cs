@@ -1,14 +1,14 @@
 ﻿using System;
 
 namespace MudClient.Core.Common {
-    public sealed class MessageEventArgs : EventArgs {
+    internal sealed class MessageEventArgs : EventArgs {
 
-		public MessageEventArgs() : base() { }
+		internal MessageEventArgs() : base() { }
 
-		public MessageEventArgs(string message) : this() {
+		internal MessageEventArgs(string message) : this() {
 			this.Message = message;
 		}
 
-		public string Message { get; set; }
+		internal string Message { get; set; }
 	}
 }

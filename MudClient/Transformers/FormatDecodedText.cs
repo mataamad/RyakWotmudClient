@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 
 namespace MudClient {
-    public static class FormatDecodedText {
+    internal static class FormatDecodedText {
 
 
         // colours text based on the ansi escape sequences
         // minimises the number of elements in the returned List to make display faster
-        public static List<FormattedOutput> Format(string s) {
+        internal static List<FormattedOutput> Format(string s) {
             var output = new List<FormattedOutput>();
 
             const char ESCAPE_CHAR = (char)0x1B;

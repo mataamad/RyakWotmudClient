@@ -7,10 +7,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MudClient {
-    public class Aliases {
-        public Dictionary<string, AliasRow> Dictionary { get; private set; } = null;
+    internal class Aliases {
+        internal Dictionary<string, AliasRow> Dictionary { get; private set; } = null;
 
-        public HashSet<string> SpecialAliasesDictionary { get; private set; } = new HashSet<string> {
+        internal HashSet<string> SpecialAliasesDictionary { get; private set; } = new HashSet<string> {
             "qf", "mv",
 
             "o", "c", "cll", "opp", "unl", "loc", "pic", // fast open
@@ -32,20 +32,20 @@ namespace MudClient {
             "#setstab"
         };
 
-        public class AliasRow {
-            public string Alias;
-            public string MapsTo;
-            public string Comment;
-            public int FileIndex;
+        internal class AliasRow {
+            internal string Alias;
+            internal string MapsTo;
+            internal string Comment;
+            internal int FileIndex;
         };
 
         private const string _aliasesCsvFilename = "./aliases.csv";
         private int _lastLine = 0;
 
-        public Aliases() {
+        internal Aliases() {
         }
 
-        public void LoadAliases() {
+        internal void LoadAliases() {
             if (Dictionary != null) {
                 throw new Exception("Cannot load aliases if some are already loaded");
             }
@@ -74,7 +74,7 @@ namespace MudClient {
             _lastLine = i;
         }
 
-        public void SetAlias(string alias, string mapping) {
+        internal void SetAlias(string alias, string mapping) {
             if (Dictionary.ContainsKey(alias)) {
                 if (string.IsNullOrWhiteSpace(mapping)) {
                     Dictionary.Remove(alias);

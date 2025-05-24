@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 namespace MudClient {
 
 
-    public static class LogMiner {
-        public class LogLine {
-            public DateTime Time { get; set; }
-            public double MsSinceStart { get; set; }
-            public string MessageType { get; set; } = CsvLogFileWriter.LOG_TYPE_MUD_INPUT;
-            public string Text { get; set; }
+    internal static class LogMiner {
+        internal class LogLine {
+            internal DateTime Time { get; set; }
+            internal double MsSinceStart { get; set; }
+            internal string MessageType { get; set; } = CsvLogFileWriter.LOG_TYPE_MUD_INPUT;
+            internal string Text { get; set; }
         }
 
-        public static void MineAttackLogs() {
+        internal static void MineAttackLogs() {
 
             var r = new Regex(" (blast|cleave|crush|hack|hit|lance|pierce|pound|scythe|shoot|slash|slice|smite|stab|sting|strike|whip)");
 
@@ -42,7 +42,7 @@ namespace MudClient {
 
         }
 
-        public static void MineStatusLogs() {
+        internal static void MineStatusLogs() {
             var filename = "./Log_2021-06-07 18-50-31.csv";
 
             var logLines = LoadLog(filename);
@@ -72,7 +72,7 @@ namespace MudClient {
             File.WriteAllLines("./splitMinedStatusLines.txt", y);
         }
 
-        public static List<LogMiner.LogLine> LoadLog(string filename) {
+        internal static List<LogMiner.LogLine> LoadLog(string filename) {
             var lines = File.ReadAllLines(filename);
 
             return lines.Select((line) => {

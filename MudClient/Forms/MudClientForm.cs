@@ -21,14 +21,14 @@ namespace MudClient.Management {
         private InputParser _inputParser;
 
 
-        public bool IsShown = false;
+        internal bool IsShown = false;
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public DevViewForm DevViewForm { get; private set; }
+        internal DevViewForm DevViewForm { get; private set; }
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public StatusForm StatusForm { get; private set; }
+        internal StatusForm StatusForm { get; private set; }
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MapWindow MapWindow { get; private set; }
+        internal MapWindow MapWindow { get; private set; }
 
 		internal MudClientForm(InputParser inputParser) {
             _inputParser = inputParser;
@@ -106,7 +106,7 @@ namespace MudClient.Management {
 		}
 
 
-        public void WriteToOutput(string message, Color textColor)
+        internal void WriteToOutput(string message, Color textColor)
         {
             if (!IsShown) {
                 return;
@@ -124,14 +124,14 @@ namespace MudClient.Management {
 			}
         }
 
-        public void WriteToOutput(List<FormattedOutput> outputs) {
+        internal void WriteToOutput(List<FormattedOutput> outputs) {
             if (IsShown) {
                 richTextBox.WriteToTextBox(outputs);
             }
         }
 
 
-        public void WriteToNarrs(List<FormattedOutput> outputs) {
+        internal void WriteToNarrs(List<FormattedOutput> outputs) {
             if (IsShown) {
                 narrsRichTextBox.WriteToTextBox(outputs);
             }

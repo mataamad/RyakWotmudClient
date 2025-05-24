@@ -3,16 +3,16 @@ using System.Runtime.InteropServices;
 using MudClient.Management;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct FLASHWINFO {
-    public UInt32 cbSize;
-    public IntPtr hwnd;
-    public Int32 dwFlags;
-    public UInt32 uCount;
-    public Int32 dwTimeout;
+internal struct FLASHWINFO {
+    internal UInt32 cbSize;
+    internal IntPtr hwnd;
+    internal Int32 dwFlags;
+    internal UInt32 uCount;
+    internal Int32 dwTimeout;
 }
 
 // dwFlags can be one of the following:
-public enum FlashType {
+internal enum FlashType {
     // stop flashing
     FLASHW_STOP = 0,
 

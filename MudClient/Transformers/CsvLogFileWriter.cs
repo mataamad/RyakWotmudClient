@@ -4,28 +4,28 @@ using System.Globalization;
 using System.IO;
 
 namespace MudClient {
-    public class CsvLogFileWriter {
+    internal class CsvLogFileWriter {
         private readonly Stopwatch _sw = Stopwatch.StartNew();
 
-        public const string LOG_TYPE_MUD_INPUT = "MudInput"; // message sent to the mud
-        public const string LOG_TYPE_MUD_OUTPUT = "MudOutput"; // message received from the mud
-        public const string LOG_TYPE_CLIENT_INFO = "ClientInfo"; // info printed to the screen by the client
+        internal const string LOG_TYPE_MUD_INPUT = "MudInput"; // message sent to the mud
+        internal const string LOG_TYPE_MUD_OUTPUT = "MudOutput"; // message received from the mud
+        internal const string LOG_TYPE_CLIENT_INFO = "ClientInfo"; // info printed to the screen by the client
 
-        public class LogLine {
-            public DateTime Time { get; set; }
-            public double MsSinceStart { get; set; }
-            public string MessageType { get; set; } = LOG_TYPE_MUD_INPUT;
-            public string EncodedText { get; set; }
+        internal class LogLine {
+            internal DateTime Time { get; set; }
+            internal double MsSinceStart { get; set; }
+            internal string MessageType { get; set; } = LOG_TYPE_MUD_INPUT;
+            internal string EncodedText { get; set; }
         }
 
         private readonly SubscribableBuffer<LogLine> _logBuffer = new SubscribableBuffer<LogLine>();
 
-        public const string _dateString = "{date}";
+        internal const string _dateString = "{date}";
         private readonly string _filename = $"./Log_{_dateString}.csv";
 
         private StreamWriter _file;
 
-        public CsvLogFileWriter() {
+        internal CsvLogFileWriter() {
             Store.TcpReceive.SubscribeAsync(async (message) => {
                 await _logBuffer.SendAsync(ToLogLine(message, LOG_TYPE_MUD_OUTPUT));
             });
@@ -47,7 +47,7 @@ namespace MudClient {
             });
         }
 
-        public void CloseFile() {
+        internal void CloseFile() {
             _file.Close();
         }
 

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MudClient {
-    public class RoomFinder {
+    internal class RoomFinder {
         // The string always ends with one of these
         private HashSet<string> _movementFailedStrings = new HashSet<string> {
             /*The * */ "seems to be closed.",
@@ -40,42 +40,42 @@ namespace MudClient {
 
         // todo: flee failed string
 
-        public class Room {
-            public string Name;
-            public string Description;
-            public string ExitsLine;
-            public DateTime Time;
-            public List<int> PossibleRoomIds = new List<int>();
+        internal class Room {
+            internal string Name;
+            internal string Description;
+            internal string ExitsLine;
+            internal DateTime Time;
+            internal List<int> PossibleRoomIds = new List<int>();
         }
 
-        public class Movement {
-            public string Direction; // n/e/s/w/u/d
-            public DirectionType DirectionType;
-            public DateTime Time;
+        internal class Movement {
+            internal string Direction; // n/e/s/w/u/d
+            internal DirectionType DirectionType;
+            internal DateTime Time;
         }
 
-        public class OtherMovement {
-            public bool LeaderFollowed = false; // ^You follow *.$
-            public bool MovementFailed = false;
-            public bool MovementSucceeded = false; // for moving while blind or in the dark
-            public bool CouldNotTravel = false;
-            public bool FleeEntered = false;
-            // public bool FleeFailed = false;
-            public bool FleeSucceeded = false;
-            public string Line;
-            public DateTime Time;
+        internal class OtherMovement {
+            internal bool LeaderFollowed = false; // ^You follow *.$
+            internal bool MovementFailed = false;
+            internal bool MovementSucceeded = false; // for moving while blind or in the dark
+            internal bool CouldNotTravel = false;
+            internal bool FleeEntered = false;
+            // internal bool FleeFailed = false;
+            internal bool FleeSucceeded = false;
+            internal string Line;
+            internal DateTime Time;
         }
 
-        public List<OtherMovement> OtherMovements = new List<OtherMovement>();
-        public int CurrentOtherMovement = -1;
-        public int ProcessedOtherMovement = -1;
-        public List<Room> SeenRooms = new List<Room>();
-        public int CurrentRoomIndex = -1;
-        public int ProcessedRoomIndex = -1; 
-        public List<Movement> Movements = new List<Movement>();
-        public int VisibleMovement = -1;
-        public int CurrentMovement = -1;
-        public int ProcessedCurrentMovement = -1;
+        internal List<OtherMovement> OtherMovements = new List<OtherMovement>();
+        internal int CurrentOtherMovement = -1;
+        internal int ProcessedOtherMovement = -1;
+        internal List<Room> SeenRooms = new List<Room>();
+        internal int CurrentRoomIndex = -1;
+        internal int ProcessedRoomIndex = -1; 
+        internal List<Movement> Movements = new List<Movement>();
+        internal int VisibleMovement = -1;
+        internal int CurrentMovement = -1;
+        internal int ProcessedCurrentMovement = -1;
 
 
         private int _foundRoomId = -1;
@@ -83,7 +83,7 @@ namespace MudClient {
 
         private readonly MapWindow _map;
 
-        public RoomFinder(
+        internal RoomFinder(
             MapWindow mapWindow) {
             _map = mapWindow;
 
@@ -124,7 +124,7 @@ namespace MudClient {
             });
         }
 
-        public void ProcessSentMessage(string output) {
+        internal void ProcessSentMessage(string output) {
             // process the command the player entered
             output = output.Trim().ToLower();
             if (new[] { "n", "s", "e", "w", "u", "d" }.Contains(output)) {
@@ -262,18 +262,18 @@ namespace MudClient {
             _map.Invalidate();
         }
 
-        public void FindSmartRoomId() {
+        internal void FindSmartRoomId() {
             /*
-            public List<OtherMovement> OtherMovements = new List<OtherMovement>();
+            internal List<OtherMovement> OtherMovements = new List<OtherMovement>();
                  LeaderFollowed MovementFailed MovementSucceeded FleeSucceeded
-            public int CurrentOtherMovement = -1;
-            public int ProcessedOtherMovement = -1;
-            public List<Room> SeenRooms = new List<Room>();
-            public int CurrentRoomIndex = -1;
-            public int ProcessedRoomIndex = -1; 
-            public List<Movement> Movements = new List<Movement>();
-            public int CurrentMovement = -1;
-            public int ProcessedCurrentMovement = -1; ;
+            internal int CurrentOtherMovement = -1;
+            internal int ProcessedOtherMovement = -1;
+            internal List<Room> SeenRooms = new List<Room>();
+            internal int CurrentRoomIndex = -1;
+            internal int ProcessedRoomIndex = -1; 
+            internal List<Movement> Movements = new List<Movement>();
+            internal int CurrentMovement = -1;
+            internal int ProcessedCurrentMovement = -1; ;
         */
 
             // so uh process any movements, other movements, and seen rooms, I guess?

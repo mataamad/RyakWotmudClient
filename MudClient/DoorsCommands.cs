@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace MudClient {
-    public class DoorsCommands {
+    internal class DoorsCommands {
         private readonly MapWindow _map;
 
-        public DoorsCommands(MapWindow mapWindow) {
+        internal DoorsCommands(MapWindow mapWindow) {
             _map = mapWindow;
 
             Store.ComplexAlias.SubscribeAsync(async (message) => {

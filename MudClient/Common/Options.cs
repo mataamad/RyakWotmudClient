@@ -2,9 +2,9 @@
 
 namespace MudClient.Core.Common {
 
-    public static class Options {
-		public static Font Font { get; set; } = new Font(FontFamily.GenericMonospace, 9f, FontStyle.Regular);
+    internal static class Options {
+		internal static Font Font { get; set; } = new Font(FontFamily.GenericMonospace, 9f, FontStyle.Regular);
 
-		public static char CommandDelimiter { get; set; } = ';';
+		internal static char CommandDelimiter { get; set; } = ';';
 	}
 }

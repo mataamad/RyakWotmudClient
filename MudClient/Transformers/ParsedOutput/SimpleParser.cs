@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MudClient.Transformers.ParsedOutput {
-    public class SimpleParser {
+    internal class SimpleParser {
         private Dictionary<string, LineMetadataType> _simpleStrings = new() {
             { "They aren't here.", LineMetadataType.TheyArentHere },
             { "You do the best you can!", LineMetadataType.YouDoTheBestYouCan },
@@ -23,10 +23,10 @@ namespace MudClient.Transformers.ParsedOutput {
             { "PANIC!  You couldn't escape!", LineMetadataType.YouCouldntEscape },
         };
 
-        public SimpleParser() {
+        internal SimpleParser() {
         }
 
-        public LineMetadataType Parse(string line) {
+        internal LineMetadataType Parse(string line) {
             if (_simpleStrings.ContainsKey(line)) {
                 return _simpleStrings[line];
             }

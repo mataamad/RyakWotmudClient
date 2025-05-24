@@ -1,7 +1,7 @@
 ﻿
 namespace MudClient {
-    public class RawInputToDevTextConverter {
-        public RawInputToDevTextConverter() {
+    internal class RawInputToDevTextConverter {
+        internal RawInputToDevTextConverter() {
             Store.TcpReceive.SubscribeAsync(async (message) => {
                 await Store.DevText.SendAsync(ControlCharacterEncoder.Encode(message).ToString());
             });

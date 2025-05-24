@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using static MudClient.CsvLogFileWriter;
 
 namespace MudClient {
-    public class CsvLogFileProducer {
+    internal class CsvLogFileProducer {
         // todo: allow choosing between constant time between messages & replaying back at a % of orignal input speed
         // todo: allow configuring time between messages
-        public CsvLogFileProducer() {
+        internal CsvLogFileProducer() {
         }
 
         private readonly TimeSpan _initialDelay = TimeSpan.FromSeconds(0.5);
@@ -17,11 +17,11 @@ namespace MudClient {
         // private readonly TimeSpan _delay = TimeSpan.FromSeconds(0.25);
         private readonly TimeSpan _delay = TimeSpan.FromSeconds(0.00);
 
-        public void LoopOnNewThread(string filename, CancellationToken cancellationToken, Action onLogParsed = null) {
+        internal void LoopOnNewThread(string filename, CancellationToken cancellationToken, Action onLogParsed = null) {
             LoopOnNewThread(filename, cancellationToken, _delay, onLogParsed);
         }
 
-        public void LoopOnNewThread(string filename, CancellationToken cancellationToken, TimeSpan timeBetweenMessages, Action onLogParsed = null) {
+        internal void LoopOnNewThread(string filename, CancellationToken cancellationToken, TimeSpan timeBetweenMessages, Action onLogParsed = null) {
             Task.Run(() => ProcessLogLoop(filename, timeBetweenMessages, onLogParsed, cancellationToken));
         }
 

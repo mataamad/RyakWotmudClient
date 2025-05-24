@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 namespace MudClient {
-    public interface ISend<T> {
-        public Task SendAsync(T item);
+    internal interface ISend<T> {
+        internal Task SendAsync(T item);
     }
 
-    public interface ISubscribe<T> {
-        public void Subscribe(Action<T> callback);
+    internal interface ISubscribe<T> {
+        internal void Subscribe(Action<T> callback);
     }
 
-    public class SubscribableBuffer<T> : ISend<T>, ISubscribe<T> {
+    internal class SubscribableBuffer<T> : ISend<T>, ISubscribe<T> {
         private BroadcastBlock<T> _broadcastBlock = new(null);
         public async Task SendAsync(T item) {
             await _broadcastBlock.SendAsync(item);
@@ -31,23 +31,23 @@ namespace MudClient {
         }
     }
 
-    public static class Store {
-        public static SubscribableBuffer<string> DevText = new();
+    internal static class Store {
+        internal static SubscribableBuffer<string> DevText = new();
 
-        public static SubscribableBuffer<string> TcpReceive = new();
+        internal static SubscribableBuffer<string> TcpReceive = new();
 
-        public static SubscribableBuffer<string> TcpSend = new();
+        internal static SubscribableBuffer<string> TcpSend = new();
 
         /// <summary>
         /// Currently used for aliases that do complex things like take arguments or interact with the map
         /// </summary>
-        public static SubscribableBuffer<string> ComplexAlias = new();
+        internal static SubscribableBuffer<string> ComplexAlias = new();
 
         /// <summary>
         /// Information to show to the user but not send to the mud - e.g. "Map: Multiple matching rooms found."
         /// </summary>
-        public static SubscribableBuffer<string> ClientInfo = new();
+        internal static SubscribableBuffer<string> ClientInfo = new();
 
-        public static SubscribableBuffer<List<ParsedOutput>> ParsedOutput = new();
+        internal static SubscribableBuffer<List<ParsedOutput>> ParsedOutput = new();
     }
 }

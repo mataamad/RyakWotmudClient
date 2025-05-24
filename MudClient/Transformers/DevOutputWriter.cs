@@ -2,10 +2,10 @@
 using System.Drawing;
 
 namespace MudClient {
-    public class DevOutputWriter {
+    internal class DevOutputWriter {
         private readonly DevViewForm _form;
 
-        public DevOutputWriter(DevViewForm form) {
+        internal DevOutputWriter(DevViewForm form) {
             _form = form;
 
             Store.TcpSend.Subscribe((message) => {

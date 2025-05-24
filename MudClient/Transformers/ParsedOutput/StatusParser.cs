@@ -7,11 +7,11 @@ namespace MudClient {
     /// <summary>
     /// Parses status from mud output
     /// </summary>
-    public class StatusParser {
+    internal class StatusParser {
 
         private readonly Regex _statusBarRegex;
 
-        public StatusParser() {
+        internal StatusParser() {
             var hp = string.Join("|", Statuses.Hp.Keys);
             var sp = string.Join("|", Statuses.SpOrDp.Keys);
             var mv = string.Join("|", Statuses.Mv.Keys);
@@ -21,7 +21,7 @@ namespace MudClient {
             _statusBarRegex = new Regex($@"^(\*|o)( R)?( S)? HP:({hp}) ((SP|DP):({sp}) )?MV:({mv}).* > ", RegexOptions.Compiled);
         }
 
-        public List<ParsedOutput> Parse(List<string> devTextLines) {
+        internal List<ParsedOutput> Parse(List<string> devTextLines) {
             var parsedWithStatusSeparate = new List<ParsedOutput>();
             var linesWithoutStatus = new List<string>();
             foreach (var line in devTextLines) {

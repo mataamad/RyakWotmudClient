@@ -3,14 +3,14 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MudClient {
-    public partial class MapWindow : Form {
+    internal partial class MapWindow : Form {
 
-        public MapWindow() {
+        internal MapWindow() {
             InitializeComponent();
             LoadData();
         }
 
-        public void LoadData() {
+        internal void LoadData() {
             Task.Run(() => {
                 MapData.Load();
 

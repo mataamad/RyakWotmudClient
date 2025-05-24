@@ -5,30 +5,30 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MudClient {
-    public static class  MapData {
-        public static Dictionary<int, ZmudDbOjectTblRow> RoomsById { get; private set; }
-        public static Dictionary<int, ZmudDbOjectTblRow[]> RoomsByZone { get; private set; }
-        public static Dictionary<string, ZmudDbOjectTblRow[]> RoomsByName { get; private set; }
-        public static Dictionary<string, ZmudDbOjectTblRow[]> RoomsByDescription { get; private set; }
-        public static Dictionary<string, ZmudDbOjectTblRow[]> RoomsByFirstLineOfDescription { get; private set; }
+    internal static class  MapData {
+        internal static Dictionary<int, ZmudDbOjectTblRow> RoomsById { get; private set; }
+        internal static Dictionary<int, ZmudDbOjectTblRow[]> RoomsByZone { get; private set; }
+        internal static Dictionary<string, ZmudDbOjectTblRow[]> RoomsByName { get; private set; }
+        internal static Dictionary<string, ZmudDbOjectTblRow[]> RoomsByDescription { get; private set; }
+        internal static Dictionary<string, ZmudDbOjectTblRow[]> RoomsByFirstLineOfDescription { get; private set; }
 
-        public static Dictionary<int, ZmudDbExitTblRow> ExitsById;
-        public static Dictionary<int, ZmudDbExitTblRow[]> ExitsByFromRoom;
-        public static Dictionary<int, ZmudDbExitTblRow[]> ExitsByToRoom;
+        internal static Dictionary<int, ZmudDbExitTblRow> ExitsById;
+        internal static Dictionary<int, ZmudDbExitTblRow[]> ExitsByFromRoom;
+        internal static Dictionary<int, ZmudDbExitTblRow[]> ExitsByToRoom;
 
-        public static bool DataLoaded { get; private set; } = false;
+        internal static bool DataLoaded { get; private set; } = false;
 
         private static ZmudDbZoneTbl[] _zones;
 
 
         // todo: these probably shouldn't be here, they're not really part of the map data, they're the player location.
-        public static int CurrentRoomId { get; set; } = 0;
-        public static int CurrentVirtualRoomId { get; set; } = -1;
-        public static int CurrentSmartRoomId { get; set; } = -1;
+        internal static int CurrentRoomId { get; set; } = 0;
+        internal static int CurrentVirtualRoomId { get; set; } = -1;
+        internal static int CurrentSmartRoomId { get; set; } = -1;
 
 
 
-        public static void Load() {
+        internal static void Load() {
             var dataLoader = new MapDataLoader();
             dataLoader.LoadData();
 

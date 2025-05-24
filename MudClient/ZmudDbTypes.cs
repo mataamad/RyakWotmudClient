@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 namespace MudClient {
     // todo: most of these values aren't actually ever null - they were just nullable in the db
 
-    public enum ExitKindTypes {
+    internal enum ExitKindTypes {
         Normal = 0,
         Door = 1,
         Locked = 2,
     }
 
-    public enum DirectionType {
+    internal enum DirectionType {
         North = 0,
         NE = 1,
         East = 2,
@@ -29,109 +29,109 @@ namespace MudClient {
         Other = 999,
     }
 
-    public class ZmudDbOjectTblRow {
-        public int? ObjID { get; set; }
-        public string Name { get; set; }
-        public string IDName { get; set; }
-        public string Hint { get; set; }
-        public string Desc { get; set; }
-        public int? KindID { get; set; }
-        public int? IconID { get; set; }
-        public int? RefNum { get; set; }
-        public int? fKey { get; set; }
-        public int? X { get; set; }
-        public int? Y { get; set; }
-        public int? Z { get; set; }
-        public int? Dx { get; set; }
-        public int? Dy { get; set; }
-        public int? ExitX { get; set; }
-        public int? ExitY { get; set; }
-        public int? ExitZ { get; set; }
-        public int? Cost { get; set; }
-        public int? Color { get; set; }
-        public int? MetaID { get; set; }
-        public int? LabelDir { get; set; }
-        public bool? Enabled { get; set; }
-        public string Script { get; set; }
-        public string Param { get; set; }
-        public string UserStr { get; set; }
-        public int? UserInt { get; set; }
-        public string Content { get; set; }
-        public int? Flags { get; set; }
-        public bool? Deleted { get; set; }
-        public int? UserID { get; set; }
-        public DateTime Modified { get; set; }
-        public int? ZoneID { get; set; }
-        public int? StyleID { get; set; }
-        public DateTime DateAdded { get; set; }
-        public int? ServerId { get; set; }
+    internal class ZmudDbOjectTblRow {
+        internal int? ObjID { get; set; }
+        internal string Name { get; set; }
+        internal string IDName { get; set; }
+        internal string Hint { get; set; }
+        internal string Desc { get; set; }
+        internal int? KindID { get; set; }
+        internal int? IconID { get; set; }
+        internal int? RefNum { get; set; }
+        internal int? fKey { get; set; }
+        internal int? X { get; set; }
+        internal int? Y { get; set; }
+        internal int? Z { get; set; }
+        internal int? Dx { get; set; }
+        internal int? Dy { get; set; }
+        internal int? ExitX { get; set; }
+        internal int? ExitY { get; set; }
+        internal int? ExitZ { get; set; }
+        internal int? Cost { get; set; }
+        internal int? Color { get; set; }
+        internal int? MetaID { get; set; }
+        internal int? LabelDir { get; set; }
+        internal bool? Enabled { get; set; }
+        internal string Script { get; set; }
+        internal string Param { get; set; }
+        internal string UserStr { get; set; }
+        internal int? UserInt { get; set; }
+        internal string Content { get; set; }
+        internal int? Flags { get; set; }
+        internal bool? Deleted { get; set; }
+        internal int? UserID { get; set; }
+        internal DateTime Modified { get; set; }
+        internal int? ZoneID { get; set; }
+        internal int? StyleID { get; set; }
+        internal DateTime DateAdded { get; set; }
+        internal int? ServerId { get; set; }
     }
 
-    public class ZmudDbExitTblRow {
-        public int? ExitID { get; set; }
-        public int? FromID { get; set; }
-        public int? ToID { get; set; }
-        public int? ExitKindID { get; set; }
-        public string Name { get; set; }
-        public string Param { get; set; } // Door name (I think) or maybe just whether it has a door
-        public string Label { get; set; }
-        public int? X0 { get; set; }
-        public int? Y0 { get; set; }
-        public int? Z0 { get; set; }
-        public int? X1 { get; set; }
-        public int? Y1 { get; set; }
-        public int? Z1 { get; set; }
-        public int? Distance { get; set; }
-        public string Script { get; set; }
-        public int? Color { get; set; }
-        public int? MetaID { get; set; }
-        public bool? DrawRev { get; set; }
-        public int? DirType { get; set; }
-        public int? DirToType { get; set; }
-        public bool? Tested { get; set; }
-        public int? Flags { get; set; }
-        public int? UserID { get; set; }
-        public DateTime Modified { get; set; }
-        public int? ExitIDTo { get; set; }
+    internal class ZmudDbExitTblRow {
+        internal int? ExitID { get; set; }
+        internal int? FromID { get; set; }
+        internal int? ToID { get; set; }
+        internal int? ExitKindID { get; set; }
+        internal string Name { get; set; }
+        internal string Param { get; set; } // Door name (I think) or maybe just whether it has a door
+        internal string Label { get; set; }
+        internal int? X0 { get; set; }
+        internal int? Y0 { get; set; }
+        internal int? Z0 { get; set; }
+        internal int? X1 { get; set; }
+        internal int? Y1 { get; set; }
+        internal int? Z1 { get; set; }
+        internal int? Distance { get; set; }
+        internal string Script { get; set; }
+        internal int? Color { get; set; }
+        internal int? MetaID { get; set; }
+        internal bool? DrawRev { get; set; }
+        internal int? DirType { get; set; }
+        internal int? DirToType { get; set; }
+        internal bool? Tested { get; set; }
+        internal int? Flags { get; set; }
+        internal int? UserID { get; set; }
+        internal DateTime Modified { get; set; }
+        internal int? ExitIDTo { get; set; }
     }
 
-    public class ZmudDbZoneTbl {
-        public int? ZoneID { get; set; }
-        public string Name { get; set; }
-        public string ZoneFile { get; set; }
-        public int? UserID { get; set; }
-        public DateTime Modified { get; set; }
-        public string Script { get; set; }
-        public string Desc { get; set; }
-        public int? X { get; set; }
-        public int? Y { get; set; }
-        public int? Z { get; set; }
-        public int? Dx { get; set; }
-        public int? Dy { get; set; }
-        public string Background { get; set; }
-        public int? XScale { get; set; }
-        public int? YScale { get; set; }
-        public int? XOffset { get; set; }
-        public int? YOffset { get; set; }
-        public int? Divisor { get; set; }
-        public int? Multiplier { get; set; }
-        public int? DefSize { get; set; }
-        public int? DefSizeY { get; set; }
-        public int? Res { get; set; }
-        public int? Color { get; set; }
-        public int? Parent { get; set; }
-        public int? MinX { get; set; }
-        public int? MinY { get; set; }
-        public int? MinZ { get; set; }
-        public int? MaxX { get; set; }
-        public int? MaxY { get; set; }
-        public int? MaxZ { get; set; }
-        public int? GridXInc { get; set; }
-        public int? GridYInc { get; set; }
-        public int? GridXOff { get; set; }
-        public int? GridYOff { get; set; }
-        public int? GridCol { get; set; }
-        public int? Flags { get; set; }
+    internal class ZmudDbZoneTbl {
+        internal int? ZoneID { get; set; }
+        internal string Name { get; set; }
+        internal string ZoneFile { get; set; }
+        internal int? UserID { get; set; }
+        internal DateTime Modified { get; set; }
+        internal string Script { get; set; }
+        internal string Desc { get; set; }
+        internal int? X { get; set; }
+        internal int? Y { get; set; }
+        internal int? Z { get; set; }
+        internal int? Dx { get; set; }
+        internal int? Dy { get; set; }
+        internal string Background { get; set; }
+        internal int? XScale { get; set; }
+        internal int? YScale { get; set; }
+        internal int? XOffset { get; set; }
+        internal int? YOffset { get; set; }
+        internal int? Divisor { get; set; }
+        internal int? Multiplier { get; set; }
+        internal int? DefSize { get; set; }
+        internal int? DefSizeY { get; set; }
+        internal int? Res { get; set; }
+        internal int? Color { get; set; }
+        internal int? Parent { get; set; }
+        internal int? MinX { get; set; }
+        internal int? MinY { get; set; }
+        internal int? MinZ { get; set; }
+        internal int? MaxX { get; set; }
+        internal int? MaxY { get; set; }
+        internal int? MaxZ { get; set; }
+        internal int? GridXInc { get; set; }
+        internal int? GridYInc { get; set; }
+        internal int? GridXOff { get; set; }
+        internal int? GridYOff { get; set; }
+        internal int? GridCol { get; set; }
+        internal int? Flags { get; set; }
     }
 
 }

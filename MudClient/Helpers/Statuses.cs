@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MudClient.Helpers {
-    public static class Statuses {
-        public static readonly Dictionary<string, double> Hp = new() {
+    internal static class Statuses {
+        internal static readonly Dictionary<string, double> Hp = new() {
             { "Healthy", 1.0 },
             { "Scratched", 0.9 },
             { "Hurt", 0.75 },
@@ -20,9 +20,9 @@ namespace MudClient.Helpers {
             // { "Mortally wounded", -0.02 }, // Not sure if this can become a status
         };
 
-        public static readonly double bleedingAmount = 0.2;
+        internal static readonly double bleedingAmount = 0.2;
 
-        public static readonly Dictionary<string, double> SpOrDp = new() {
+        internal static readonly Dictionary<string, double> SpOrDp = new() {
             { "Bursting", 1.0 },
             { "Full", 0.9 },
             { "Strong", 0.5 },
@@ -32,7 +32,7 @@ namespace MudClient.Helpers {
             { "None", 0},
         };
 
-        public static readonly Dictionary<string, double> Mv = new() {
+        internal static readonly Dictionary<string, double> Mv = new() {
             { "Fresh", 1.0 },
             { "Full", 0.9 },
             { "Strong", 0.75 },

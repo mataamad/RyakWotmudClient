@@ -7,8 +7,8 @@ using System.Media;
 using System.Windows.Forms;
 
 namespace MudClient.Common.Extensions {
-    public static class RichTextBoxExtensions {
-		public static void AppendFormattedText(this RichTextBox richTextBox, string message, Color textColor) {
+    internal static class RichTextBoxExtensions {
+		internal static void AppendFormattedText(this RichTextBox richTextBox, string message, Color textColor) {
             /*richTextBox.SelectionStart = richTextBox.TextLength;
             richTextBox.SelectionLength = 0;
             richTextBox.SelectionColor = textColor;
@@ -20,7 +20,7 @@ namespace MudClient.Common.Extensions {
             richTextBox.AppendText(message);
 		}
 
-        public static void ReplaceCurrentLine(this RichTextBox richTextBox, string message, Color textColor) {
+        internal static void ReplaceCurrentLine(this RichTextBox richTextBox, string message, Color textColor) {
             int charIndex = richTextBox.GetFirstCharIndexOfCurrentLine();
             var selectionLength = Math.Min(message.Length, richTextBox.TextLength - charIndex);
 
@@ -32,7 +32,7 @@ namespace MudClient.Common.Extensions {
             }
         }
 
-        public static void WriteToTextBox(this RichTextBox target, List<FormattedOutput> outputs) {
+        internal static void WriteToTextBox(this RichTextBox target, List<FormattedOutput> outputs) {
 
             if (!outputs.Any()) {
                 return;

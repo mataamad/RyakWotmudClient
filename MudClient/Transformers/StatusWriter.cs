@@ -2,9 +2,9 @@
 using System.Text.RegularExpressions;
 
 namespace MudClient {
-    public class StatusWriter {
+    internal class StatusWriter {
 
-        public StatusWriter(StatusForm statusForm) {
+        internal StatusWriter(StatusForm statusForm) {
             var scoreHealthRegex = new Regex(@"^You have (\d*)\((\d*)\) hit(, (\d*)\((\d*)\) (saidin|saidar|dark power))? and (-?\d*)\((\d*)\) movement points.$", RegexOptions.Compiled);
 
             var enemyColors = new Regex(@"\*\\x1B\[3(6|5|1)m([^ ]*)\\x1B\[0m\*",RegexOptions.Compiled);

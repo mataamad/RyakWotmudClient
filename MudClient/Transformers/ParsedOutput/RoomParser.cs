@@ -6,11 +6,11 @@ namespace MudClient {
     /// <summary>
     /// Parses rooms from mud output - should be run after StatusParser
     /// </summary>
-    public static class RoomParser {
+    internal static class RoomParser {
 
         private static readonly Regex _roomNameRegex = new(@"^\\x1B\[36m(((?!(from the dark|answers your prayers)).)*)\\x1B\[0m$", RegexOptions.Compiled);
 
-        public static List<ParsedOutput> Parse(List<ParsedOutput> parsedWithStatusSeparate) {
+        internal static List<ParsedOutput> Parse(List<ParsedOutput> parsedWithStatusSeparate) {
             var parsedWithStatusAndRoomSeparate = new List<ParsedOutput>();
             foreach (var output in parsedWithStatusSeparate) {
                 if (output.Type != ParsedOutputType.Raw) {

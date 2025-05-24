@@ -8,11 +8,11 @@ using System.Windows.Forms;
 
 namespace MudClient.Management
 {
-    public partial class StatusForm : Form {
+    internal partial class StatusForm : Form {
 		
 		private bool _shown = false;
 		
-		public StatusForm() {
+		internal StatusForm() {
 			InitializeComponent();
 		}
 
@@ -29,13 +29,13 @@ namespace MudClient.Management
 			_shown = true;
 		}
 
-		public void WriteToOutput(List<FormattedOutput> outputs) {
+		internal void WriteToOutput(List<FormattedOutput> outputs) {
 			if (_shown) {
 				richTextBox.WriteToTextBox(outputs);
 			}
 		}
 
-		public void WriteToOutput(string message, Color textColor) {
+		internal void WriteToOutput(string message, Color textColor) {
 			if (!_shown) {
 				return;
 			}

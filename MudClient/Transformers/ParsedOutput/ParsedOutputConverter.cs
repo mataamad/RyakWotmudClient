@@ -9,9 +9,9 @@ namespace MudClient {
     /// <summary>
     /// Tries to convert mud output into high level machine readable data
     /// </summary>
-    public class ParsedOutputConverter {
+    internal class ParsedOutputConverter {
 
-        public ParsedOutputConverter() {
+        internal ParsedOutputConverter() {
             var simpleParser = new SimpleParser();
             var attackParser = new AttackParser();
             var narrsParser = new NarrsParser();

@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace MudClient {
-    public class AttackParser {
+    internal class AttackParser {
 
         // todo: this doesn't handle colours
         // 1 \x1B[32mYou lance an oozing ball of mud's right arm into bloody fragments!
@@ -43,10 +43,10 @@ namespace MudClient {
         Regex theyTickleThem = new($@"^(\\x1B\[0m)?(.*) (barely tickles|tickles) (.*)'s ({meleeBodypart}) with (his|her|its) ({meleeAttack})\.$", RegexOptions.Compiled);
         Regex theyMissThem = new($@"^(\\x1B\[0m)?(.*) tries to ({meleeAttack}) (.*), but (he|she|it) (deflects the blow|parries successfully|dodges the attack)\.$", RegexOptions.Compiled);
         Regex theySwiftlyMissThem = new($@"^(\\x1B\[0m)?(.*) swiftly dodges (.*)'s attempt to ({@meleeAttack}) (him|her|it).$", RegexOptions.Compiled);
-        public AttackParser() {
+        internal AttackParser() {
         }
 
-        public bool Matches(string line) {
+        internal bool Matches(string line) {
             var regexes = new List<Regex> {
                 youTickle,
                 youBarely,

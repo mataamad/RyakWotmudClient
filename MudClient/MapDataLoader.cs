@@ -10,22 +10,22 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MudClient {
-    public class MapDataLoader {
+    internal class MapDataLoader {
 
-        public ZmudDbOjectTblRow[] Rooms { get; private set; }
-        public ZmudDbExitTblRow[] Exits { get; private set; }
-        public ZmudDbZoneTbl[] Zones { get; private set; }
+        internal ZmudDbOjectTblRow[] Rooms { get; private set; }
+        internal ZmudDbExitTblRow[] Exits { get; private set; }
+        internal ZmudDbZoneTbl[] Zones { get; private set; }
 
-        public class DeserializeObject {
-            public ZmudDbOjectTblRow[] Rooms;
-            public ZmudDbExitTblRow[] Exits;
-            public ZmudDbZoneTbl[] Zones;
+        internal class DeserializeObject {
+            internal ZmudDbOjectTblRow[] Rooms;
+            internal ZmudDbExitTblRow[] Exits;
+            internal ZmudDbZoneTbl[] Zones;
         }
 
         const string MapFilename = "./mapData.json.gzip";
 
 
-        public void LoadData() {
+        internal void LoadData() {
             LoadFromDb(); // loading from DB because it's a lot faster - use json if it's all you have access to
 
             /*using (var file = File.OpenRead(MapFilename))
@@ -63,14 +63,14 @@ namespace MudClient {
         }
 
 
-        /*public ZmudDbOjectTblRow[] GetBlightRooms() {
+        /*internal ZmudDbOjectTblRow[] GetBlightRooms() {
             // var exits = _exits.Where(e => e. // exits is a lot harder without joins
             var blightZone = _zones.Where(z => z.Name == "Blight").FirstOrDefault();
             var blightRooms = _rooms.Where(r => r.ZoneID == blightZone.ZoneID).ToArray();
             return blightRooms;
         }*/
 
-        /*public ZmudDbExitTblRow[] GetExits(Dictionary<int, ZmudDbOjectTblRow> rooms) {
+        /*internal ZmudDbExitTblRow[] GetExits(Dictionary<int, ZmudDbOjectTblRow> rooms) {
 
             var exits = _exits.Where(exit => rooms.ContainsKey(exit.FromID.Value) || rooms.ContainsKey(exit.ToID.Value));
             return exits.ToArray();
@@ -98,7 +98,7 @@ namespace MudClient {
                                 { "String", "string" },
                                 { "DateTime", "DateTime" },
                             };
-                    Debug.WriteLine($"public {typesDict[type.Name]} {reader.GetName(i)} {{ get; set; }}");
+                    Debug.WriteLine($"internal {typesDict[type.Name]} {reader.GetName(i)} {{ get; set; }}");
                     i++;
                 }
                 return;

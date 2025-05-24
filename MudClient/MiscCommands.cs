@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace MudClient {
-    public class MiscCommands {
+    internal class MiscCommands {
         private string _enemyRace = "light";
         private string _target1 = "";
         private string _target2 = "";
 
-        public MiscCommands() {
+        internal MiscCommands() {
             Store.ComplexAlias.SubscribeAsync(async (message) => {
                 await ProcessMiscCommand(message);
             });

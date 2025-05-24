@@ -6,14 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace MudClient {
-    public class NarrsParser {
+    internal class NarrsParser {
 
         // todo: won't get mob or enemy communication but do I even care about that?
         private readonly Regex _narrsTellsAndSays = new(@"^(\\x1B\[3(3|1)m)?(\w*) (says|narrates|tells you|bellows|hisses|chats) '(.*)'(\\x1B\[0m)?$", RegexOptions.Compiled);
-        public NarrsParser() {
+        internal NarrsParser() {
         }
 
-        public bool Matches(string line) {
+        internal bool Matches(string line) {
             return _narrsTellsAndSays.IsMatch(line);
         }
     }

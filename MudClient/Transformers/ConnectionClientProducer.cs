@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 
 namespace MudClient {
-    public class ConnectionClientProducer {
-        public delegate void EventHandler(MessageEventArgs e);
+    internal class ConnectionClientProducer {
+        internal delegate void EventHandler(MessageEventArgs e);
 
-        public event EventHandler OnClientDisconnected;
-        public event EventHandler OnConnectionEstablished;
+        internal event EventHandler OnClientDisconnected;
+        internal event EventHandler OnConnectionEstablished;
 
         private readonly TcpClient _tcpClient;
 
@@ -21,7 +21,7 @@ namespace MudClient {
         private NetworkStream _controlStream;
         private StreamWriter _controlWriter;
 
-        public ConnectionClientProducer() {
+        internal ConnectionClientProducer() {
 
             _tcpClient = new TcpClient {
                 NoDelay = true,
@@ -38,7 +38,7 @@ namespace MudClient {
             });
         }
 
-        public void LoopOnNewThreads(string address, int port, CancellationToken cancellationToken) {
+        internal void LoopOnNewThreads(string address, int port, CancellationToken cancellationToken) {
             Task.Run(() => ReceiveLoop(address, port, cancellationToken));
         }
 

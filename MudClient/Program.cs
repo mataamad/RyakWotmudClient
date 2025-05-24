@@ -54,22 +54,22 @@ using System.Threading.Tasks;
 */
 
 namespace MudClient {
-    public class Program {
-        public static bool EnableStabAliases = false;
+    internal class Program {
+        internal static bool EnableStabAliases = false;
 
-        public const bool ReadFromLogFile = false;
-        // public const bool ReadFromLogFile = false;
-        // public const string LogFilename = "./test_only_bash.csv";
-        // public const string LogFilename = "./Log_2017-11-27 17-34-35.csv";
-        // public const string LogFilename = "one_room.csv";
-        // public const string LogFilename = "ASushiAppears.csv";
-        // public const string LogFilename = "Log_2021-06-12 12-52-06.csv"; // a long one
-        // public const string LogFilename = "incorrectColorReset.csv"; // contains a bunch of interesting test cases, not just colors
-        public const string LogFilename = "eqinvwhowhere.csv"; // contains some logs for 'eq', 'inv', 'who', and 'where'
-        // public const string LogFilename = "LdLog.csv";
+        internal const bool ReadFromLogFile = false;
+        // internal const bool ReadFromLogFile = false;
+        // internal const string LogFilename = "./test_only_bash.csv";
+        // internal const string LogFilename = "./Log_2017-11-27 17-34-35.csv";
+        // internal const string LogFilename = "one_room.csv";
+        // internal const string LogFilename = "ASushiAppears.csv";
+        // internal const string LogFilename = "Log_2021-06-12 12-52-06.csv"; // a long one
+        // internal const string LogFilename = "incorrectColorReset.csv"; // contains a bunch of interesting test cases, not just colors
+        internal const string LogFilename = "eqinvwhowhere.csv"; // contains some logs for 'eq', 'inv', 'who', and 'where'
+        // internal const string LogFilename = "LdLog.csv";
 
         [STAThread]
-        public static void Main(string[] args) {
+        internal static void Main(string[] args) {
             // LogMiner.MineStatusLogs(); return;
             // LogMiner.MineAttackLogs(); return;
 

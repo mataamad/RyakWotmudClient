@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using static MudClient.RoomFinder;
 
 namespace MudClient {
-    public static class MapRenderer {
+    internal static class MapRenderer {
 
         private const int DefaultRoomSize = 6;
         private const double MaxScaling = 0.08;
@@ -24,7 +24,7 @@ namespace MudClient {
 
         private static SolidBrush _backgroundBrush = new(Color.FromArgb(60,60,60));
 
-        public static void Render(PaintEventArgs e) {
+        internal static void Render(PaintEventArgs e) {
             if (!MapData.DataLoaded) {
                 return;
             }

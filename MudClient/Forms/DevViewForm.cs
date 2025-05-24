@@ -7,11 +7,11 @@ using System.Windows.Forms;
 
 namespace MudClient.Management
 {
-    public partial class DevViewForm : Form {
+    internal partial class DevViewForm : Form {
 		
 		private bool _shown = false;
 		
-		public DevViewForm() {
+		internal DevViewForm() {
 			InitializeComponent();
 		}
 
@@ -28,7 +28,7 @@ namespace MudClient.Management
 			_shown = true;
 		}
 
-		public void WriteToOutput(string message, Color textColor) {
+		internal void WriteToOutput(string message, Color textColor) {
 			if (!_shown) {
 				return;
 			}

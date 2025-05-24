@@ -65,10 +65,10 @@ dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
 
 #Style - modifier options
 
-#prefer accessibility modifiers to be declared except for public interface members. This will currently not differ from always and will act as future proofing for if C# adds default interface methods.
+#prefer accessibility modifiers to be declared except for internal interface members. This will currently not differ from always and will act as future proofing for if C# adds default interface methods.
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
 
 #Style - Modifier preferences
 
 #when this rule is set to a list of modifiers, prefer the specified ordering.
-csharp_preferred_modifier_order = public,static,readonly:suggestion
+csharp_preferred_modifier_order = internal,static,readonly:suggestion
