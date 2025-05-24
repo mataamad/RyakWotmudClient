@@ -18,7 +18,7 @@ namespace MudClient.Management {
 
 
         private const string COMMAND_QUIT = @"#QUIT";
-        private InputParser _inputParser;
+        private readonly InputParser _inputParser;
 
 
         internal bool IsShown = false;
