@@ -2,10 +2,10 @@
 using System.Media;
 
 namespace MudClient {
-    public class NarrsWriter {
+    internal class NarrsWriter {
         private readonly MudClientForm _form;
 
-        public NarrsWriter(MudClientForm form) {
+        internal NarrsWriter(MudClientForm form) {
             _form = form;
 
             Store.ParsedOutput.Subscribe((outputs) => {

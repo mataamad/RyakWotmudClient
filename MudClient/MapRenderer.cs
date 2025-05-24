@@ -22,7 +22,7 @@ namespace MudClient {
         private static int _prevOffsetY = 0;
         private static int _prevZoneId = -1;
 
-        private static SolidBrush _backgroundBrush = new SolidBrush(Color.FromArgb(60,60,60));
+        private static SolidBrush _backgroundBrush = new(Color.FromArgb(60,60,60));
 
         public static void Render(PaintEventArgs e) {
             if (!MapData.DataLoaded) {
@@ -49,7 +49,7 @@ namespace MudClient {
             var roomsInZone = MapData.RoomsByZone[currentZoneId];
 
             // todo: could cache this
-            HashSet<int> exitsInZone = new HashSet<int>();
+            HashSet<int> exitsInZone = new();
             foreach (var room in roomsInZone) {
                 if (MapData.ExitsByFromRoom.ContainsKey(room.ObjID.Value)) {
                     foreach (var exit in MapData.ExitsByFromRoom[room.ObjID.Value]) {
@@ -153,7 +153,7 @@ namespace MudClient {
             g.FillRectangle(_backgroundBrush, 0, 0, screenWidth, screenHeight);
 
 
-            HashSet<int> drawn = new HashSet<int>();
+            HashSet<int> drawn = new();
             foreach (var exitId in exitsInZone) {
                 var exit = MapData.ExitsById[exitId];
                 // todo: I'm pretty sure lines are still drawn twice

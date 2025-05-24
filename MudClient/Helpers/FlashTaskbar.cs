@@ -32,12 +32,12 @@ public enum FlashType {
     FLASHW_TIMERNOFG = 12,
 }
 
-public static class WindowFlasher {
+internal static class WindowFlasher {
 
     [DllImport("user32.dll")]
     static extern Int32 FlashWindowEx(ref FLASHWINFO pwfi);
 
-    public static void Flash(MudClientForm window) {
+    internal static void Flash(MudClientForm window) {
         if (!window.IsShown) {
             return;
         }

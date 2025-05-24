@@ -66,12 +66,10 @@ namespace MudClient {
 
             var x = splitLinedStatusLines.Where(line => line.Contains(" >")).ToList();
 
-            var y = x.Where(s => s.StartsWith("o") || s.StartsWith("*")).Distinct().ToList();
-            var z = x.Where(s => !s.StartsWith("o") && !s.StartsWith("*")).ToList();
+            var y = x.Where(s => s.StartsWith('o') || s.StartsWith('*')).Distinct().ToList();
+            var z = x.Where(s => !s.StartsWith('o') && !s.StartsWith('*')).ToList();
 
             File.WriteAllLines("./splitMinedStatusLines.txt", y);
-
-            var i = 0;
         }
 
         public static List<LogMiner.LogLine> LoadLog(string filename) {

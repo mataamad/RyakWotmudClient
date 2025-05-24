@@ -10,9 +10,9 @@ namespace MudClient {
     /// <summary>
     /// Renders parsed output to the screen
     /// </summary>
-    public class ParsedOutputWriter {
+    internal class ParsedOutputWriter {
 
-        public ParsedOutputWriter(MudClientForm form) {
+        internal ParsedOutputWriter(MudClientForm form) {
             Store.TcpSend.Subscribe((message) => {
                 // output = output + "\n"; // seems to be the most like zMud
                 form.WriteToOutput(" " + message + " ", MudColors.CommandColor);

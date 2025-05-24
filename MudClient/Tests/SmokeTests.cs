@@ -13,32 +13,28 @@ namespace MudClient.Tests {
         public async Task TestBash() {
             string simpleBashLog = @"./test_only_bash.csv";
             var response = await RunTest(simpleBashLog);
-
-           int i = 0;
         }
 
         [TestMethod]
         public async Task TestLongerLog() {
             var response = await RunTest("./Log_2017-11-27 17-34-35.csv");
-
-            int i = 0;
         }
 
         // todo: fix these tests after the new Store
 
 
         private async Task<List<FormattedOutput>> RunTest(string logFilename) {
-            BufferBlock<string> tcpReceiveBuffer = new BufferBlock<string>();
-            BufferBlock<string> sendMessageBuffer = new BufferBlock<string>();
-            BufferBlock<string> clientInfoBuffer = new BufferBlock<string>();
-            BufferBlock<List<FormattedOutput>> richTextBuffer = new BufferBlock<List<FormattedOutput>>();
+            BufferBlock<string> tcpReceiveBuffer = new();
+            BufferBlock<string> sendMessageBuffer = new();
+            BufferBlock<string> clientInfoBuffer = new();
+            BufferBlock<List<FormattedOutput>> richTextBuffer = new();
 
             var cts = new CancellationTokenSource();
 
             bool logFileParsed = false;
-            Action logParsedCallback = () => {
+            void logParsedCallback() {
                 logFileParsed = true;
-            };
+            }
 
             var csvLogFileProducer = new CsvLogFileProducer();
             csvLogFileProducer.LoopOnNewThread(logFilename, cts.Token, TimeSpan.Zero, logParsedCallback);

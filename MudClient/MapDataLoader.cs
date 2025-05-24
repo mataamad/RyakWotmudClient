@@ -41,16 +41,15 @@ namespace MudClient {
         // private const string ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=""ZmudDump2021"";Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         private const string ConnectionString = @"Data Source=(local);Initial Catalog=""ZmudDump2021"";Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         private void LoadFromDb() {
-            using (var connection = new SqlConnection(ConnectionString)) {
-                connection.Open();
+            using var connection = new SqlConnection(ConnectionString);
+            connection.Open();
 
-                string roomsQuery = "SELECT * FROM  ObjectTbl";
-                string exitsQuery = "SELECT * FROM  ExitTbl";
-                string zonesQuery = "SELECT * FROM  ZoneTbl";
-                Rooms = connection.Query<ZmudDbOjectTblRow>(roomsQuery).ToArray();
-                Exits = connection.Query<ZmudDbExitTblRow>(exitsQuery).ToArray();
-                Zones = connection.Query<ZmudDbZoneTbl>(zonesQuery).ToArray();
-            }
+            string roomsQuery = "SELECT * FROM  ObjectTbl";
+            string exitsQuery = "SELECT * FROM  ExitTbl";
+            string zonesQuery = "SELECT * FROM  ZoneTbl";
+            Rooms = connection.Query<ZmudDbOjectTblRow>(roomsQuery).ToArray();
+            Exits = connection.Query<ZmudDbExitTblRow>(exitsQuery).ToArray();
+            Zones = connection.Query<ZmudDbZoneTbl>(zonesQuery).ToArray();
         }
 
         // unused
@@ -79,33 +78,31 @@ namespace MudClient {
 
         // debug method
         private void GenerateClassDeclaration() {
-            using (var connection = new SqlConnection(ConnectionString)) {
-                connection.Open();
+            using var connection = new SqlConnection(ConnectionString);
+            connection.Open();
 
-                // string roomsQuery = "SELECT * FROM ObjectTbl";
-                string roomsQuery = "SELECT * FROM ExitTbl";
-                // string roomsQuery = "SELECT * FROM  ZoneTbl";
-                using (var command = new SqlCommand(roomsQuery, connection))
-                using (SqlDataReader reader = command.ExecuteReader()) {
-                    while (reader.Read()) {
-                        object[] values = new object[reader.FieldCount];
-                        reader.GetValues(values);
-                        int i = 0;
-                        foreach (var obj in values) {
-                            var type = obj.GetType();
-                            var typesDict = new Dictionary<string, string> {
+            // string roomsQuery = "SELECT * FROM ObjectTbl";
+            string roomsQuery = "SELECT * FROM ExitTbl";
+            // string roomsQuery = "SELECT * FROM  ZoneTbl";
+            using var command = new SqlCommand(roomsQuery, connection);
+            using SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read()) {
+                object[] values = new object[reader.FieldCount];
+                reader.GetValues(values);
+                int i = 0;
+                foreach (var obj in values) {
+                    var type = obj.GetType();
+                    var typesDict = new Dictionary<string, string> {
                                 { "Int32", "int?" },
                                 { "Boolean", "bool?" },
                                 { "String", "string" },
                                 { "DateTime", "DateTime" },
                             };
-                            Debug.WriteLine($"public {typesDict[type.Name]} {reader.GetName(i)} {{ get; set; }}");
-                            i++;
-                        }
-                        return;
-                        Debug.WriteLine(string.Join(",", values));
-                    }
+                    Debug.WriteLine($"public {typesDict[type.Name]} {reader.GetName(i)} {{ get; set; }}");
+                    i++;
                 }
+                return;
+                // Debug.WriteLine(string.Join(",", values));
             }
         }
     }

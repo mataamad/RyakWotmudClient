@@ -8,7 +8,7 @@ namespace MudClient {
     /// </summary>
     public static class RoomParser {
 
-        private static readonly Regex _roomNameRegex = new Regex(@"^\\x1B\[36m(((?!(from the dark|answers your prayers)).)*)\\x1B\[0m$", RegexOptions.Compiled);
+        private static readonly Regex _roomNameRegex = new(@"^\\x1B\[36m(((?!(from the dark|answers your prayers)).)*)\\x1B\[0m$", RegexOptions.Compiled);
 
         public static List<ParsedOutput> Parse(List<ParsedOutput> parsedWithStatusSeparate) {
             var parsedWithStatusAndRoomSeparate = new List<ParsedOutput>();
@@ -21,7 +21,7 @@ namespace MudClient {
                     // todo: probably don't need to do it at all
                     // var lines = output.Lines.Clone() as string[];
                     var lines = output.Lines;
-                    List<string> nonRoomLines = new List<string>();
+                    List<string> nonRoomLines = new();
                     int i = 0;
                     while (i < lines.Length) {
 

@@ -8,7 +8,10 @@
   <PropertyGroup>
     <StartupObject>MudClient.Program</StartupObject>
   </PropertyGroup>
-  <ItemGroup>
+  <PropertyGroup>
+	<NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+	<ItemGroup>
     <None Update="mapData.json.gzip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
