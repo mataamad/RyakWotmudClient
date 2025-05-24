@@ -96,7 +96,7 @@ namespace MudClient {
                     }
                     break;
                 case "#setstab":
-                    var enable = restOfMessage == "1" || restOfMessage.ToLower() == "true";
+                    var enable = restOfMessage == "1" || restOfMessage.Equals("true", StringComparison.CurrentCultureIgnoreCase);
                     await Store.ClientInfo.SendAsync($"enable stab aliases: {enable}");
                     Program.EnableStabAliases = enable;
                 break;

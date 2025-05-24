@@ -34,15 +34,15 @@ namespace MudClient.Transformers.ParsedOutput {
 
     internal class ParsedOutput {
         internal ParsedOutputType Type { get; set; } = ParsedOutputType.Raw;
-        internal string[] Lines { get; set; } = new string[0];
-        internal LineMetadata[] LineMetadata = new LineMetadata[0];
+        internal string[] Lines { get; set; } = [];
+        internal LineMetadata[] LineMetadata = [];
 
         // todo: only used by room
         internal string Title = "";
-        internal string[] Description = new string[0];
+        internal string[] Description = [];
         internal string Exits = "";
-        internal string[] Tracks = new string[0];
-        internal string[] Items = new string[0];
-        internal string[] Creatures = new string[0];
+        internal string[] Tracks = [];
+        internal string[] Items = [];
+        internal string[] Creatures = [];
     }
 }

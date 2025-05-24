@@ -10,7 +10,7 @@ namespace MudClient {
     internal class Aliases {
         internal Dictionary<string, AliasRow> Dictionary { get; private set; } = null;
 
-        internal HashSet<string> SpecialAliasesDictionary { get; private set; } = new HashSet<string> {
+        internal HashSet<string> SpecialAliasesDictionary { get; private set; } = [
             "qf", "mv",
 
             "o", "c", "cll", "opp", "unl", "loc", "pic", // fast open
@@ -30,7 +30,7 @@ namespace MudClient {
 
             "b",
             "#setstab"
-        };
+        ];
 
         internal class AliasRow {
             internal string Alias;
@@ -49,7 +49,7 @@ namespace MudClient {
             if (Dictionary != null) {
                 throw new Exception("Cannot load aliases if some are already loaded");
             }
-            Dictionary = new Dictionary<string, AliasRow>();
+            Dictionary = [];
 
             string[] lines = File.ReadAllLines(_aliasesCsvFilename);
 

@@ -101,7 +101,7 @@ namespace MudClient.Helpers {
                             }
                             char numberChar2 = e.Current;
 
-                            string numberString = new string(new[] { numberChar1, numberChar2 });
+                            string numberString = new string([numberChar1, numberChar2]);
                             int parsed;
                             if (int.TryParse(numberString, System.Globalization.NumberStyles.HexNumber, provider: null, out parsed)) {
                                 char decodedChar = (char)parsed;

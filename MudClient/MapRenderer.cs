@@ -49,7 +49,7 @@ namespace MudClient {
             var roomsInZone = MapData.RoomsByZone[currentZoneId];
 
             // todo: could cache this
-            HashSet<int> exitsInZone = new();
+            HashSet<int> exitsInZone = [];
             foreach (var room in roomsInZone) {
                 if (MapData.ExitsByFromRoom.ContainsKey(room.ObjID.Value)) {
                     foreach (var exit in MapData.ExitsByFromRoom[room.ObjID.Value]) {
@@ -153,7 +153,7 @@ namespace MudClient {
             g.FillRectangle(_backgroundBrush, 0, 0, screenWidth, screenHeight);
 
 
-            HashSet<int> drawn = new();
+            HashSet<int> drawn = [];
             foreach (var exitId in exitsInZone) {
                 var exit = MapData.ExitsById[exitId];
                 // todo: I'm pretty sure lines are still drawn twice
@@ -181,7 +181,7 @@ namespace MudClient {
 
                         if (exit.DirType.Value == (int)DirectionType.Up) {
                             // draw upwards facing triangle
-                            e.Graphics.FillPolygon(Brushes.Black, new[] { new Point(x1 - 6, y1), new Point(x1 - 2, y1 + 4), new Point(x1 - 10, y1 + 4) });
+                            e.Graphics.FillPolygon(Brushes.Black, [new Point(x1 - 6, y1), new Point(x1 - 2, y1 + 4), new Point(x1 - 10, y1 + 4)]);
 
                             // has a door
                             if (exit.ExitKindID.Value != 0) {
@@ -190,7 +190,7 @@ namespace MudClient {
                         }
                         if (exit.DirType.Value == (int)DirectionType.Down) {
                             // draw downwards facing triangle
-                            e.Graphics.FillPolygon(Brushes.Black, new[] { new Point(x1 - 5, y1 + roomSize), new Point(x1 - 2, y1 - 3 + roomSize), new Point(x1 - 8, y1 - 3 + roomSize) });
+                            e.Graphics.FillPolygon(Brushes.Black, [new Point(x1 - 5, y1 + roomSize), new Point(x1 - 2, y1 - 3 + roomSize), new Point(x1 - 8, y1 - 3 + roomSize)]);
 
                             // has a door
                             if (exit.ExitKindID.Value != 0) {
@@ -224,28 +224,28 @@ namespace MudClient {
                             deltaX2 = -4 - roomSize / 2;
 
                         if (hasToRoom) {
-                            e.Graphics.DrawLines(Pens.Black, new[] {
+                            e.Graphics.DrawLines(Pens.Black, [
                                 new Point(x1 + roomSize/2, y1 + roomSize/2),
                                 new Point(x1 + roomSize/2 + deltaX1, y1 + roomSize/2 + deltaY1),
                                 new Point(x2 + roomSize/2 + deltaX2, y2 + roomSize/2 + deltaY2),
                                 new Point(x2 + roomSize/2, y2 + roomSize/2)
-                            });
+                            ]);
                         } else {
                             // to room doesn't exist or is in different zone
                             var pen = new Pen(Brushes.Brown, width: 4);
-                            e.Graphics.DrawLines(pen, new[] {
+                            e.Graphics.DrawLines(pen, [
                                 new Point(x1 + roomSize/2, y1 + roomSize/2),
                                 new Point(x1 + roomSize/2 + deltaX1, y1 + roomSize/2 + deltaY1)
-                            });
+                            ]);
                         }
 
                         if (exit.ExitIDTo == -1) {
                             // todo: do more than just colour 1 way links
                             var pen = new Pen(Brushes.Green, width: 4);
-                            e.Graphics.DrawLines(pen, new[] {
+                            e.Graphics.DrawLines(pen, [
                                 new Point(x1 + roomSize/2, y1 + roomSize/2),
                                 new Point(x1 + roomSize/2 + deltaX1, y1 + roomSize/2 + deltaY1)
-                            });
+                            ]);
                         }
 
                         // has a door

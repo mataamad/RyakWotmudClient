@@ -29,12 +29,12 @@ namespace MudClient {
         }
 
         internal async Task HandleInput(string input) {
-            var inputLines = (input ?? string.Empty).Split(new[] { Options.CommandDelimiter }, StringSplitOptions.None);
+            var inputLines = (input ?? string.Empty).Split([Options.CommandDelimiter], StringSplitOptions.None);
             bool firstLine = true;
             foreach (var inputLine in inputLines) {
                 var inputStringSplit = inputLine.Split(' ').Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
                 if (inputStringSplit.Length == 0) {
-                    inputStringSplit = new[] { "" };
+                    inputStringSplit = [""];
                 }
                 var firstWordToUpper = inputStringSplit[0].ToUpper();
                 switch (firstWordToUpper) {

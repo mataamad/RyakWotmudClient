@@ -77,7 +77,7 @@ namespace MudClient {
         internal static List<LogMiner.LogLine> LoadLog(string filename) {
             var lines = File.ReadAllLines(filename);
 
-            return lines.Select((line) => {
+            return [.. lines.Select((line) => {
                 var splitLine = line.Split(',');
 
                 return new LogMiner.LogLine {
@@ -86,7 +86,7 @@ namespace MudClient {
                     MessageType = splitLine[2],
                     Text = ControlCharacterEncoder.Decode(splitLine[3]),
                 };
-            }).ToList();
+            })];
         }
     }
 }

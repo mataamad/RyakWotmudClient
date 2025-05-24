@@ -47,9 +47,9 @@ namespace MudClient {
             string roomsQuery = "SELECT * FROM  ObjectTbl";
             string exitsQuery = "SELECT * FROM  ExitTbl";
             string zonesQuery = "SELECT * FROM  ZoneTbl";
-            Rooms = connection.Query<ZmudDbOjectTblRow>(roomsQuery).ToArray();
-            Exits = connection.Query<ZmudDbExitTblRow>(exitsQuery).ToArray();
-            Zones = connection.Query<ZmudDbZoneTbl>(zonesQuery).ToArray();
+            Rooms = [.. connection.Query<ZmudDbOjectTblRow>(roomsQuery)];
+            Exits = [.. connection.Query<ZmudDbExitTblRow>(exitsQuery)];
+            Zones = [.. connection.Query<ZmudDbZoneTbl>(zonesQuery)];
         }
 
         // unused

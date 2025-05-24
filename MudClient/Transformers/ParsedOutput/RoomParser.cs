@@ -21,7 +21,7 @@ namespace MudClient.Transformers.ParsedOutput {
                     // todo: probably don't need to do it at all
                     // var lines = output.Lines.Clone() as string[];
                     var lines = output.Lines;
-                    List<string> nonRoomLines = new();
+                    List<string> nonRoomLines = [];
                     int i = 0;
                     while (i < lines.Length) {
 
@@ -31,7 +31,7 @@ namespace MudClient.Transformers.ParsedOutput {
                             if (nonRoomLines.Count > 0) {
                                 parsedWithStatusAndRoomSeparate.Add(new ParsedOutput {
                                     Type = ParsedOutputType.Raw,
-                                    Lines = nonRoomLines.ToArray(),
+                                    Lines = [.. nonRoomLines],
                                 });
                                 nonRoomLines.Clear();
                             }
@@ -79,7 +79,7 @@ namespace MudClient.Transformers.ParsedOutput {
                     if (nonRoomLines.Count > 0) {
                         parsedWithStatusAndRoomSeparate.Add(new ParsedOutput {
                             Type = ParsedOutputType.Raw,
-                            Lines = nonRoomLines.ToArray(),
+                            Lines = [.. nonRoomLines],
                         });
                         nonRoomLines.Clear();
                     }
@@ -89,8 +89,6 @@ namespace MudClient.Transformers.ParsedOutput {
         }
 
         private static (bool match, int endLineNumber, ParsedOutput room) TryMatchRoom(string[] lines, int i) {
-            var roomName = "";
-
             var line = lines[i];
 
             var match = _roomNameRegex.Match(line);
@@ -99,7 +97,7 @@ namespace MudClient.Transformers.ParsedOutput {
             }
 
             var roomStartLine = i;
-            roomName = match.Groups[1].Value; // todo which group should it be?
+            var roomName = match.Groups[1].Value; // todo which group should it be?
             var description = new List<string>();
 
             // found a potential room
@@ -217,7 +215,7 @@ namespace MudClient.Transformers.ParsedOutput {
                 Type = ParsedOutputType.Room,
                 Lines = lines[i..endRoomLine],
                 Title = roomName,
-                Description = description.ToArray(),
+                Description = [.. description],
                 Exits = lines[exitsLine],
                 Tracks = lines[tracksStartLine..itemsStartLine],
                 Items = itemLines,

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 namespace MudClient {
     internal class DoorsCommands {
         private readonly MapWindow _map;
+        internal static readonly HashSet<string> directions = new() { "n", "e", "s", "w", "u", "d" };
 
         internal DoorsCommands(MapWindow mapWindow) {
             _map = mapWindow;
@@ -27,15 +28,15 @@ namespace MudClient {
             var splitOutput = output.Split(' ');
             if (splitOutput.Length != 1) {
                 if (splitOutput[0] == "o") {
-                    if (new[] { "n", "e", "s", "w" }.Contains(splitOutput[1])) {
-                        splitOutput = new[] { "o" + splitOutput[2] };
+                    if (directions.Contains(splitOutput[1])) {
+                        splitOutput = ["o" + splitOutput[2]];
                     } else {
                         await Store.TcpSend.SendAsync($"open {string.Join(" ", splitOutput.Skip(1))}");
                         return;
                     }
                 } else if (splitOutput[0] == "c") {
-                    if (new[] { "n", "e", "s", "w" }.Contains(splitOutput[1])) {
-                        splitOutput = new[] { "s" + splitOutput[1] };
+                    if (directions.Contains(splitOutput[1])) {
+                        splitOutput = ["s" + splitOutput[1]];
                     } else {
                         await Store.TcpSend.SendAsync($"close {string.Join(" ", splitOutput.Skip(1))}");
                         return;
@@ -61,7 +62,7 @@ namespace MudClient {
             // need a map window command to get all doors, and also to get doors in a direction
 
             // todo: this probably shouldn't be accessed from here
-            var currentRoomExits = new ZmudDbExitTblRow[0];
+            var currentRoomExits = Array.Empty<ZmudDbExitTblRow>();
             MapData.ExitsByFromRoom.TryGetValue(MapData.CurrentVirtualRoomId, out currentRoomExits);
 
             var exitsWithDoors = currentRoomExits.Where(exit => !string.IsNullOrEmpty(exit.Param)).ToArray();

@@ -30,7 +30,7 @@ namespace MudClient.Transformers.ParsedOutput {
                     if (linesWithoutStatus.Count > 0) {
                         var raw = new ParsedOutput {
                             Type = ParsedOutputType.Raw,
-                            Lines = linesWithoutStatus.ToArray(),
+                            Lines = [.. linesWithoutStatus],
                         };
                         parsedWithStatusSeparate.Add(raw);
                         linesWithoutStatus.Clear();
@@ -43,7 +43,7 @@ namespace MudClient.Transformers.ParsedOutput {
 
                     var parsedStatus = new ParsedOutput {
                         Type = ParsedOutputType.Status,
-                        Lines = new[] { status },
+                        Lines = [status],
                     };
                     parsedWithStatusSeparate.Add(parsedStatus);
 
@@ -58,7 +58,7 @@ namespace MudClient.Transformers.ParsedOutput {
             if (linesWithoutStatus.Count > 0) {
                 var raw = new ParsedOutput {
                     Type = ParsedOutputType.Raw,
-                    Lines = linesWithoutStatus.ToArray(),
+                    Lines = [.. linesWithoutStatus],
                 };
                 parsedWithStatusSeparate.Add(raw);
             }

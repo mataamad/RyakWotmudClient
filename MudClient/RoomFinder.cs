@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace MudClient {
     internal class RoomFinder {
         // The string always ends with one of these
-        private readonly HashSet<string> _movementFailedStrings = new HashSet<string> {
+        private readonly HashSet<string> _movementFailedStrings = [
             /*The * */ "seems to be closed.",
             "Nah... You feel too relaxed to do that..",
             "In your dreams, or what?",
@@ -24,7 +24,7 @@ namespace MudClient {
             "Your mount is too exhausted.",
             "Your mount is engaged in combat!",
             "Your mount ought to be awake and standing first!",
-        };
+        ];
         readonly Regex _movementFailedRegex;
 
         // todo: is this at the start or end of a line? Probably end?
@@ -46,7 +46,7 @@ namespace MudClient {
             internal string Description;
             internal string ExitsLine;
             internal DateTime Time;
-            internal List<int> PossibleRoomIds = new List<int>();
+            internal List<int> PossibleRoomIds = [];
         }
 
         internal class Movement {
@@ -67,13 +67,13 @@ namespace MudClient {
             internal DateTime Time;
         }
 
-        internal List<OtherMovement> OtherMovements = new List<OtherMovement>();
+        internal List<OtherMovement> OtherMovements = [];
         internal int CurrentOtherMovement = -1;
         internal int ProcessedOtherMovement = -1;
-        internal List<Room> SeenRooms = new List<Room>();
+        internal List<Room> SeenRooms = [];
         internal int CurrentRoomIndex = -1;
         internal int ProcessedRoomIndex = -1; 
-        internal List<Movement> Movements = new List<Movement>();
+        internal List<Movement> Movements = [];
         internal int VisibleMovement = -1;
         internal int CurrentMovement = -1;
         internal int ProcessedCurrentMovement = -1;
@@ -283,13 +283,13 @@ namespace MudClient {
                 return;
             }
 
-            List<OtherMovement> unprocessedOtherMovements = new List<OtherMovement>();
+            List<OtherMovement> unprocessedOtherMovements = [];
             if (CurrentOtherMovement == -1) {
                 CurrentOtherMovement = 0;
                 // ProcessedCurrentMovement = 0; // -1?
                 unprocessedOtherMovements = OtherMovements;
             } else {
-                unprocessedOtherMovements = OtherMovements.Skip(CurrentOtherMovement + 1).ToList();
+                unprocessedOtherMovements = [.. OtherMovements.Skip(CurrentOtherMovement + 1)];
             }
 
             if (unprocessedOtherMovements.Any(other => other.MovementFailed)) {
@@ -297,10 +297,10 @@ namespace MudClient {
                 CurrentOtherMovement = OtherMovements.Count - 1;
                 CurrentRoomIndex = SeenRooms.Count - 1;
                 CurrentMovement = Movements.Count - 1;
-                unprocessedOtherMovements = new List<OtherMovement>();
+                unprocessedOtherMovements = [];
             }
 
-            List<Room> unprocessedRooms = new List<Room>();
+            List<Room> unprocessedRooms = [];
             Room currentRoom;
             if (CurrentRoomIndex == -1) {
                 currentRoom = SeenRooms[0];
@@ -309,7 +309,7 @@ namespace MudClient {
                 unprocessedRooms = SeenRooms;
             } else {
                 currentRoom = SeenRooms[CurrentRoomIndex];
-                unprocessedRooms = SeenRooms.Skip(CurrentRoomIndex + 1).ToList();
+                unprocessedRooms = [.. SeenRooms.Skip(CurrentRoomIndex + 1)];
             }
 
             CurrentMovement += unprocessedRooms.Count;
@@ -319,13 +319,13 @@ namespace MudClient {
             CurrentMovement += unprocessedOtherMovements.Where(other => other.CouldNotTravel).Count();
             CurrentOtherMovement = OtherMovements.Count - 1;
 
-            List<Movement> unprocessedMovements = new List<Movement>();
+            List<Movement> unprocessedMovements = [];
             if (CurrentMovement == -1) {
                 CurrentMovement = 0;
                 // ProcessedCurrentMovement = 0; // -1?
                 unprocessedMovements = Movements;
             } else {
-                unprocessedMovements = Movements.Skip(CurrentMovement + 1).ToList(); // +1?
+                unprocessedMovements = [.. Movements.Skip(CurrentMovement + 1)]; // +1?
             }
 
             if (currentRoom.PossibleRoomIds.Count == 1) {
@@ -363,7 +363,7 @@ namespace MudClient {
         // unused - using ProcessMovementReceived instead
         private async Task FindFoundRoomId(Room room) {
             var possibleRooms = PossibleRoomMatcher.FindPossibleRooms(room);
-            room.PossibleRoomIds = possibleRooms.Select(r => r.RoomData.ObjID.Value).ToList();
+            room.PossibleRoomIds = [.. possibleRooms.Select(r => r.RoomData.ObjID.Value)];
 
             if (possibleRooms.Count != 0) {
                 _foundRoomId = possibleRooms.First().RoomData.ObjID.Value;
@@ -417,10 +417,10 @@ namespace MudClient {
         private async Task MoveCurrentRoom(Room newRoom, Movement movement) {
             MapData.RoomsById.TryGetValue(MapData.CurrentRoomId, out var previousRoom);
 
-            List<PossibleRoom> matchedRooms = new List<PossibleRoom>();
+            List<PossibleRoom> matchedRooms = [];
             if (newRoom != null) {
                 matchedRooms = PossibleRoomMatcher.FindPossibleRooms(newRoom);
-                newRoom.PossibleRoomIds = matchedRooms.Select(r => r.RoomData.ObjID.Value).ToList();
+                newRoom.PossibleRoomIds = [.. matchedRooms.Select(r => r.RoomData.ObjID.Value)];
             }
 
             if (matchedRooms.Count == 0) {
@@ -472,7 +472,7 @@ namespace MudClient {
                         MapData.ExitsByFromRoom.TryGetValue(previousRoom.ObjID.Value, out var previousRoomExits);
                         if (previousRoomExits != null) {
                             var adjacentRoomIds = previousRoomExits.Select(previousExit => previousExit.ToID.Value);
-                            matchedAdjacentRooms = matchedRooms.Select(r => r.RoomData.ObjID.Value).Intersect(adjacentRoomIds).ToList();
+                            matchedAdjacentRooms = [.. matchedRooms.Select(r => r.RoomData.ObjID.Value).Intersect(adjacentRoomIds)];
                         }
 
                         var matchesZone = matchedRooms.Where(r => r.RoomData.ZoneID.Value == previousRoom.ZoneID.Value).ToList();

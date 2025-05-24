@@ -27,7 +27,7 @@ namespace MudClient.Helpers {
         internal static Color CommandColor { get; set; } = Color.Gold;
         internal static Color ClientInfoColor { get; set; } = Color.CornflowerBlue;
 
-        internal static readonly Dictionary<string, Color> Dictionary = new Dictionary<string, Color> {
+        internal static readonly Dictionary<string, Color> Dictionary = new() {
             { ANSI_UNKNOWN, Color.White },
             { ANSI_BLACK, Color.WhiteSmoke },
             { ANSI_RED, Color.Red },

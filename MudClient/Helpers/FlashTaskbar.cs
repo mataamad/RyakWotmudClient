@@ -44,7 +44,7 @@ internal static class WindowFlasher {
 
         void Flash() {
             var fw = new FLASHWINFO {
-                cbSize = Convert.ToUInt32(Marshal.SizeOf(typeof(FLASHWINFO))),
+                cbSize = Convert.ToUInt32(Marshal.SizeOf<FLASHWINFO>()),
                 hwnd = window.Handle,
                 dwFlags = (int)(FlashType.FLASHW_TRAY | FlashType.FLASHW_TIMERNOFG),
                 uCount = UInt32.MaxValue
