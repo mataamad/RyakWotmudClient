@@ -35,7 +35,7 @@ internal enum FlashType {
 internal static class WindowFlasher {
 
     [DllImport("user32.dll")]
-    static extern Int32 FlashWindowEx(ref FLASHWINFO pwfi);
+    private static extern Int32 FlashWindowEx(ref FLASHWINFO pwfi);
 
     internal static void Flash(MudClientForm window) {
         if (!window.IsShown) {

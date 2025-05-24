@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace MudClient {
     internal class RoomFinder {
         // The string always ends with one of these
-        private HashSet<string> _movementFailedStrings = new HashSet<string> {
+        private readonly HashSet<string> _movementFailedStrings = new HashSet<string> {
             /*The * */ "seems to be closed.",
             "Nah... You feel too relaxed to do that..",
             "In your dreams, or what?",
@@ -24,19 +24,19 @@ namespace MudClient {
             "Your mount is engaged in combat!",
             "Your mount ought to be awake and standing first!",
         };
-        Regex _movementFailedRegex;
+        readonly Regex _movementFailedRegex;
 
         // todo: is this at the start or end of a line? Probably end?
-        private string _blindMoveString = "You can't see a damned thing, you're blinded!";
+        private readonly string _blindMoveString = "You can't see a damned thing, you're blinded!";
 
         // todo: is this at the start or end of a line? Probably end?
-        private string _darkMoveString = "It is pitch black...";
+        private readonly string _darkMoveString = "It is pitch black...";
 
-        private string _followString = /*^*/ "You follow" /* *.$ */;
+        private readonly string _followString = /*^*/ "You follow" /* *.$ */;
 
-        private string _fleeCompleteString = /*^*/ "You flee head over heels.";
+        private readonly string _fleeCompleteString = /*^*/ "You flee head over heels.";
 
-        private string _cannotGoThatWay = "Alas, you cannot go that way...";
+        private readonly string _cannotGoThatWay = "Alas, you cannot go that way...";
 
         // todo: flee failed string
 

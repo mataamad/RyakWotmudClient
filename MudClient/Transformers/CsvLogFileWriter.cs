@@ -23,7 +23,7 @@ namespace MudClient {
         internal const string _dateString = "{date}";
         private readonly string _filename = $"./Log_{_dateString}.csv";
 
-        private StreamWriter _file;
+        private readonly StreamWriter _file;
 
         internal CsvLogFileWriter() {
             Store.TcpReceive.SubscribeAsync(async (message) => {

@@ -17,7 +17,7 @@ namespace MudClient {
 
         private readonly TcpClient _tcpClient;
 
-        private byte[] _dataBuffer = new byte[1024 * 8 /*8KB*/];
+        private readonly byte[] _dataBuffer = new byte[1024 * 8 /*8KB*/];
         private NetworkStream _controlStream;
         private StreamWriter _controlWriter;
 

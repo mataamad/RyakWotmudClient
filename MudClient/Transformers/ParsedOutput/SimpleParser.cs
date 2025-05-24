@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MudClient.Transformers.ParsedOutput {
     internal class SimpleParser {
-        private Dictionary<string, LineMetadataType> _simpleStrings = new() {
+        private readonly Dictionary<string, LineMetadataType> _simpleStrings = new() {
             { "They aren't here.", LineMetadataType.TheyArentHere },
             { "You do the best you can!", LineMetadataType.YouDoTheBestYouCan },
             { "Ok", LineMetadataType.Ok },

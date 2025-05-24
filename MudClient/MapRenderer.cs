@@ -22,7 +22,7 @@ namespace MudClient {
         private static int _prevOffsetY = 0;
         private static int _prevZoneId = -1;
 
-        private static SolidBrush _backgroundBrush = new(Color.FromArgb(60,60,60));
+        private static readonly SolidBrush _backgroundBrush = new(Color.FromArgb(60,60,60));
 
         internal static void Render(PaintEventArgs e) {
             if (!MapData.DataLoaded) {
