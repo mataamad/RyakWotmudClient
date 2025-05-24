@@ -34,7 +34,7 @@ namespace MudClient.Extensions {
 
         internal static void WriteToTextBox(this RichTextBox target, List<FormattedOutput> outputs) {
 
-            if (!outputs.Any()) {
+            if (outputs.Count == 0) {
                 return;
             }
 

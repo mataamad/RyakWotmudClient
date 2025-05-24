@@ -76,7 +76,7 @@ namespace MudClient {
                 }
             }
 
-            if (possibleRoomsWithExits.Any()) {
+            if (possibleRoomsWithExits.Count != 0) {
                 return possibleRoomsWithExits.Select(r => new PossibleRoom { RoomData = r }).ToList();
             } else {
                 // exits are probably wrong

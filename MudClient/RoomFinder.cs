@@ -279,7 +279,7 @@ namespace MudClient {
 
             // so uh process any movements, other movements, and seen rooms, I guess?
 
-            if (!SeenRooms.Any()) {
+            if (SeenRooms.Count == 0) {
                 return;
             }
 
@@ -365,7 +365,7 @@ namespace MudClient {
             var possibleRooms = PossibleRoomMatcher.FindPossibleRooms(room);
             room.PossibleRoomIds = possibleRooms.Select(r => r.RoomData.ObjID.Value).ToList();
 
-            if (possibleRooms.Any()) {
+            if (possibleRooms.Count != 0) {
                 _foundRoomId = possibleRooms.First().RoomData.ObjID.Value;
 
                 if (possibleRooms.Count > 1) {
@@ -377,7 +377,7 @@ namespace MudClient {
                         var matchesZone = possibleRooms.Where(r => r.RoomData.ZoneID.Value == previousRoom.ZoneID.Value).ToList();
 
                         // todo: if there is more than one match then prefer matching rooms close to the previous room
-                        if (matchesZone.Any()) {
+                        if (matchesZone.Count != 0) {
                             _foundRoomId = matchesZone.First().RoomData.ObjID.Value;
                         }
                     }
@@ -423,7 +423,7 @@ namespace MudClient {
                 newRoom.PossibleRoomIds = matchedRooms.Select(r => r.RoomData.ObjID.Value).ToList();
             }
 
-            if (!matchedRooms.Any()) {
+            if (matchedRooms.Count == 0) {
                 await Store.ClientInfo.SendAsync("Map: No matching rooms found.");
             }
             if (matchedRooms.Count > 1) {
@@ -442,7 +442,7 @@ namespace MudClient {
                 if (exit != null) {
                     int newRoomId = exit.ToID.Value;
 
-                    if (matchedRooms.Any() && !matchedRooms.Any(mr => mr.RoomData.ObjID.Value == newRoomId)) {
+                    if (matchedRooms.Count != 0 && !matchedRooms.Any(mr => mr.RoomData.ObjID.Value == newRoomId)) {
                         await Store.ClientInfo.SendAsync("Map: Moved to new room but didn't match an expected found room");
                     }
 
@@ -460,7 +460,7 @@ namespace MudClient {
 
             // didn't receive a direction - rely purely on map find
 
-            if (matchedRooms.Any()) {
+            if (matchedRooms.Count != 0) {
                 var previousRoomId = MapData.CurrentRoomId;
                 MapData.CurrentRoomId = matchedRooms.First().RoomData.ObjID.Value;
 
@@ -477,9 +477,9 @@ namespace MudClient {
 
                         var matchesZone = matchedRooms.Where(r => r.RoomData.ZoneID.Value == previousRoom.ZoneID.Value).ToList();
 
-                        if (matchedAdjacentRooms.Any()) {
+                        if (matchedAdjacentRooms.Count != 0) {
                             MapData.CurrentRoomId = matchedAdjacentRooms.First();
-                        } else if (matchesZone.Any()) {
+                        } else if (matchesZone.Count != 0) {
                             MapData.CurrentRoomId = matchesZone.First().RoomData.ObjID.Value;
                         }
                     }
