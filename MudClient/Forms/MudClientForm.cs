@@ -1,6 +1,6 @@
 ﻿using MudClient.Common;
-using MudClient.Common.Extensions;
-using MudClient.Core.Common;
+using MudClient.Extensions;
+using MudClient.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

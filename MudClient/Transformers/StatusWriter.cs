@@ -1,7 +1,9 @@
-﻿using MudClient.Management;
+﻿using MudClient.Helpers;
+using MudClient.Management;
+using MudClient.Transformers.ParsedOutput;
 using System.Text.RegularExpressions;
 
-namespace MudClient {
+namespace MudClient.Transformers {
     internal class StatusWriter {
 
         internal StatusWriter(StatusForm statusForm) {

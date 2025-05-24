@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 
-namespace MudClient {
+namespace MudClient.Helpers {
     internal class MudColors {
         internal const string ANSI_COLOR_ESCAPE_CHARACTER = "\u001b";
         internal const string ANSI_ESCAPE_CHARACTER = "\\x1B";

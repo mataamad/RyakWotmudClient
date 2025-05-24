@@ -1,7 +1,9 @@
-﻿using MudClient.Management;
+﻿using MudClient.Helpers;
+using MudClient.Management;
+using MudClient.Transformers.ParsedOutput;
 using System.Media;
 
-namespace MudClient {
+namespace MudClient.Transformers {
     internal class NarrsWriter {
         private readonly MudClientForm _form;
 

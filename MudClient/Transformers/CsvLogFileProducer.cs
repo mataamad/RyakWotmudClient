@@ -1,11 +1,12 @@
-﻿using System;
+﻿using MudClient.Helpers;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static MudClient.CsvLogFileWriter;
+using static MudClient.Transformers.CsvLogFileWriter;
 
-namespace MudClient {
+namespace MudClient.Transformers {
     internal class CsvLogFileProducer {
         // todo: allow choosing between constant time between messages & replaying back at a % of orignal input speed
         // todo: allow configuring time between messages

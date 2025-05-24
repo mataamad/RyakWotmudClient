@@ -1,5 +1,5 @@
-﻿using MudClient.Common.Extensions;
-using MudClient.Core.Common;
+﻿using MudClient.Common;
+using MudClient.Extensions;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-namespace MudClient {
+namespace MudClient.Transformers {
     internal class ConnectionClientProducer {
         internal delegate void EventHandler(MessageEventArgs e);
 

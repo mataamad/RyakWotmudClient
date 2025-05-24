@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace MudClient {
+namespace MudClient.Transformers.ParsedOutput {
 
     internal enum ParsedOutputType {
         Raw,

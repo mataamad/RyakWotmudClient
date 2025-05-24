@@ -4,11 +4,11 @@ using MudClient.Management;
 
 [StructLayout(LayoutKind.Sequential)]
 internal struct FLASHWINFO {
-    internal UInt32 cbSize;
+    internal uint cbSize;
     internal IntPtr hwnd;
-    internal Int32 dwFlags;
-    internal UInt32 uCount;
-    internal Int32 dwTimeout;
+    internal int dwFlags;
+    internal uint uCount;
+    internal int dwTimeout;
 }
 
 // dwFlags can be one of the following:
@@ -35,7 +35,7 @@ internal enum FlashType {
 internal static class WindowFlasher {
 
     [DllImport("user32.dll")]
-    private static extern Int32 FlashWindowEx(ref FLASHWINFO pwfi);
+    private static extern int FlashWindowEx(ref FLASHWINFO pwfi);
 
     internal static void Flash(MudClientForm window) {
         if (!window.IsShown) {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace MudClient {
+namespace MudClient.Transformers.ParsedOutput {
     /// <summary>
     /// Parses rooms from mud output - should be run after StatusParser
     /// </summary>
@@ -88,7 +88,7 @@ namespace MudClient {
             return parsedWithStatusAndRoomSeparate;
         }
 
-        private static (bool match, int endLineNumber, ParsedOutput? room) TryMatchRoom(string[] lines, int i) {
+        private static (bool match, int endLineNumber, ParsedOutput room) TryMatchRoom(string[] lines, int i) {
             var roomName = "";
 
             var line = lines[i];

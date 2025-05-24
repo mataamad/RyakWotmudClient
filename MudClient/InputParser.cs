@@ -1,4 +1,5 @@
-﻿using MudClient.Core.Common;
+﻿using MudClient.Common;
+using MudClient.Transformers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

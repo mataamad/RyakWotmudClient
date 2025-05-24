@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace MudClient.Core.Common {
+namespace MudClient.Common {
 
     internal static class Options {
 		internal static Font Font { get; set; } = new Font(FontFamily.GenericMonospace, 9f, FontStyle.Regular);

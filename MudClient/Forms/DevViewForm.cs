@@ -1,5 +1,6 @@
-﻿using MudClient.Common.Extensions;
-using MudClient.Core.Common;
+﻿using MudClient.Common;
+using MudClient.Extensions;
+using MudClient.Helpers;
 using System;
 using System.Drawing;
 using System.Text;

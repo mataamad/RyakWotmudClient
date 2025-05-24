@@ -1,11 +1,11 @@
-﻿using MudClient.Transformers.ParsedOutput;
+﻿using MudClient.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MudClient {
+namespace MudClient.Transformers.ParsedOutput {
     /// <summary>
     /// Tries to convert mud output into high level machine readable data
     /// </summary>

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace MudClient {
+namespace MudClient.Transformers.ParsedOutput {
     /// <summary>
     /// Parses status from mud output
     /// </summary>

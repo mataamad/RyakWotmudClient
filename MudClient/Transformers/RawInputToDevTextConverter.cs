@@ -1,5 +1,6 @@
-﻿
-namespace MudClient {
+﻿using MudClient.Helpers;
+
+namespace MudClient.Transformers {
     internal class RawInputToDevTextConverter {
         internal RawInputToDevTextConverter() {
             Store.TcpReceive.SubscribeAsync(async (message) => {

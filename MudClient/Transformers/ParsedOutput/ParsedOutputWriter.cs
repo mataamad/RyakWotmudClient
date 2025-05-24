@@ -1,4 +1,6 @@
-﻿using MudClient.Management;
+﻿using MudClient.Helpers;
+using MudClient.Management;
+using MudClient.Transformers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -6,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MudClient {
+namespace MudClient.Transformers.ParsedOutput {
     /// <summary>
     /// Renders parsed output to the screen
     /// </summary>

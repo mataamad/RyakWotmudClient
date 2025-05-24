@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using MudClient.Helpers;
+using System.Drawing;
 
 namespace MudClient {
     internal class FormattedOutput {

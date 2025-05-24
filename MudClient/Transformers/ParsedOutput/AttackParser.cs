@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MudClient {
+namespace MudClient.Transformers.ParsedOutput {
     internal class AttackParser {
 
         // todo: this doesn't handle colours

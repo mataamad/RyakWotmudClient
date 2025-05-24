@@ -6,7 +6,7 @@ using System.Linq;
 using System.Media;
 using System.Windows.Forms;
 
-namespace MudClient.Common.Extensions {
+namespace MudClient.Extensions {
     internal static class RichTextBoxExtensions {
 		internal static void AppendFormattedText(this RichTextBox richTextBox, string message, Color textColor) {
             /*richTextBox.SelectionStart = richTextBox.TextLength;

@@ -1,4 +1,6 @@
 ﻿using MudClient.Management;
+using MudClient.Transformers;
+using MudClient.Transformers.ParsedOutput;
 using System;
 using System.Collections.Generic;
 using System.IO;

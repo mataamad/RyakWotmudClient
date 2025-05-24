@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MudClient.Transformers;
 using System;
 using System.Collections.Generic;
 using System.Threading;

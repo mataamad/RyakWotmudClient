@@ -1,7 +1,9 @@
-﻿using MudClient.Management;
+﻿using MudClient.Helpers;
+using MudClient.Management;
+using MudClient.Transformers.ParsedOutput;
 using System.Drawing;
 
-namespace MudClient {
+namespace MudClient.Transformers {
     internal class DevOutputWriter {
         private readonly DevViewForm _form;
 

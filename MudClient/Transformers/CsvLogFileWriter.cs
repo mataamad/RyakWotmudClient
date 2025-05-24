@@ -1,9 +1,10 @@
-﻿using System;
+﻿using MudClient.Helpers;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 
-namespace MudClient {
+namespace MudClient.Transformers {
     internal class CsvLogFileWriter {
         private readonly Stopwatch _sw = Stopwatch.StartNew();
 

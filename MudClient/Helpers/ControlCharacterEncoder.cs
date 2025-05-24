@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MudClient {
+namespace MudClient.Helpers {
     internal static class ControlCharacterEncoder {
         internal static string Encode(string s, bool forCsv = false) {
             var sb = new StringBuilder();
 
             foreach (char c in s) {
-                if (Char.IsControl(c) || (c > 127 && c < 256) || (forCsv && c == ',')) {
+                if (Char.IsControl(c) || c > 127 && c < 256 || forCsv && c == ',') {
                     if (c == '\r') {
                         sb.Append("\\r");
                     } else if (c == '\n') {
@@ -38,7 +38,7 @@ namespace MudClient {
             int i = 0;
             while (i < s.Length) {
                 char c = s[i];
-                if (Char.IsControl(c) || (c > 127 && c < 256)) {
+                if (Char.IsControl(c) || c > 127 && c < 256) {
                     // need to split on \r\n, \n\r, \n, and \r, but still want to allow two empty lines of output in a row
                     if (c == '\r') {
                         lines.Add(sb.ToString());

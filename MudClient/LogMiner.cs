@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MudClient.Helpers;
+using MudClient.Transformers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

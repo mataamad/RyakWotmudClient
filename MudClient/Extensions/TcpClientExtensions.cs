@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 
-namespace MudClient.Common.Extensions {
+namespace MudClient.Extensions {
     internal static class TcpClientExtensions {
 		internal static bool IsSocketConnected(this TcpClient client) {
 			if (!client.Connected) return false;

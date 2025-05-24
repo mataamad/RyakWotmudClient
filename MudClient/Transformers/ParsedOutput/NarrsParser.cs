@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MudClient {
+namespace MudClient.Transformers.ParsedOutput {
     internal class NarrsParser {
 
         // todo: won't get mob or enemy communication but do I even care about that?
